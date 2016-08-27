@@ -50,6 +50,9 @@ static inline void ppu_set_vblank(bool yesno){
 		BIT_CLEAR(ppu.PPUSTATUS,7);
 	}
 }
+static inline bool ppu_is_vblank_enabled(){
+	return BIT_CHECK(ppu.PPUCTRL,7);
+}
 static inline void ppu_set_sprite0_hit(bool yesno){
 	if(yesno){
 		BIT_SET(ppu.PPUSTATUS,6);
@@ -128,11 +131,14 @@ uint8_t ppu_ior(uint16_t addr){
 			//save the current value of the reg before modifying it
 			uint8_t value = ppu.PPUSTATUS;
 			BIT_CLEAR(ppu.PPUSTATUS,7);
-			BIT_CLEAR(ppu.PPUSTATUS,6);
+			
+			// are we sure that bit 6 is cleared?
+			//BIT_CLEAR(ppu.PPUSTATUS,6);
 			ppu.scroll_received_x = false;
 			ppu.PPUSCROLL = 0;
 			// the line below was the bug :( one of them at least
 			// thank you gdb
+			lt = 0;
 			ppu.addr_received_high_byte = false;
 			addr_latch = 0;
 			ppu_2007_1st_read = true;
@@ -146,15 +152,15 @@ uint8_t ppu_ior(uint16_t addr){
 			break;
 		case 7:{
 			uint8_t value; 
-			/*
+			
 			if(lv >= 0x3f00)
 				data_latch = ppu_rb(0x3f00 | (lv & 0x1f));
 			value = data_latch;
 			data_latch = ppu_rb(lv & 0x3fff);
 			lv += BIT_CHECK(ppu.PPUCTRL,2) ? 32:1;
-			lv &= 0x7fff;
-			*/
+			//lv &= 0x7fff;
 			
+			/*
 			if(ppu.PPUADDR >= 0x3f00)
 				data_latch = ppu_rb(ppu.PPUADDR);
 			value = data_latch;
@@ -166,7 +172,7 @@ uint8_t ppu_ior(uint16_t addr){
 			//}else{
 				ppu.PPUADDR += BIT_CHECK(ppu.PPUCTRL,2) ? 32:1;
 			//}
-			
+			*/
 			return value;
 			break;
 		}
@@ -239,13 +245,10 @@ void ppu_iow(uint16_t addr, uint8_t data){
 			break;
 		}
 		case 7:{
-			/*
-			if(ppu_is_show_bg()){
-				
-			}else{
+			
 				//lv &= 0x3FFF;
 				// take care of mirroring V/H
-				if(lv >= 0x2000 && lv < 0x4000 ){
+				if((lv & 0x3fff) >= 0x2000 && (lv & 0x3fff) < 0x4000 ){
 					ppu_wb((lv & 0x3fff) ^ ppu.mirroring_xor, data);
 					ppu_wb((lv & 0x3fff), data);
 				}else{
@@ -254,12 +257,13 @@ void ppu_iow(uint16_t addr, uint8_t data){
 				// this was a bug I didn't increament when writing only when reading..
 				// TODO avoid magic numbers and put it in function
 				// refer to nes documentation
-			}
-			lv += BIT_CHECK(ppu.PPUCTRL,2) ? 32:1;
-			lv &= 0x7FFF;
-			break;
-			*/
 			
+			lv += BIT_CHECK(ppu.PPUCTRL,2) ? 32:1;
+			//lv &= 0x7FFF;
+			break;
+			
+			
+			/*
 			ppu.PPUADDR &= 0x3FFF;
 			// take care of mirroring V/H
 			if(ppu.PPUADDR >= 0x2000 && ppu.PPUADDR < 0x4000 ){
@@ -274,7 +278,7 @@ void ppu_iow(uint16_t addr, uint8_t data){
 			ppu.PPUADDR += BIT_CHECK(ppu.PPUCTRL,2) ? 32:1;
 			//ppu.PPUADDR &= 0x3FFF;
 			break;
-			
+			*/
 		}
 	}
 }
@@ -558,6 +562,9 @@ void ppu_run(int cycles){
 	}
 }
 
+void ppu_tick(void){
+	
+}
 // FIXME bad practice cpu instance should be inside the cpu and encabsulated 
 extern cpu_t cpu;
 void ppu_cycle(){

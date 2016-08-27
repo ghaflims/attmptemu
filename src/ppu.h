@@ -55,4 +55,5 @@ void ppu_wb(uint16_t addr,uint8_t b);
 bool ppu_is_show_bg();
 bool ppu_is_show_sprites();
 void ppu_oam_wb(uint8_t data);
+void ppu_tick(void);
 #endif

@@ -759,6 +759,11 @@ void cpu_exec(cpu_t* cpu, long cycles){
 		}
 	// run cpu until the requested cycles..
 	cycles-=ticktable[op];
+	// todo: tick the ppu 3x times as the value in ticktable[op]
+	int i = 0;
+	for(i=0;i<ticktable[op]*3;i++)
+		ppu_tick();
+	
 //	print_debug(cpu,op);
 	}
 }
