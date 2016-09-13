@@ -42,3 +42,7 @@ void mem_dump(const void* mem,size_t len){
 			putchar('\n');
 	}
 }
+
+void ppu_dump(int x, int y, uint16_t nt, uint16_t lv){
+	printf("y:%03d\tx:%03d\tnt:0x%04x\tlv:0x%04x\n",y,x,nt,lv);
+}

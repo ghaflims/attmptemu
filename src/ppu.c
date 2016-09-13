@@ -5,6 +5,12 @@
 #include "hal.h"
 #include <string.h>
 #include <stdio.h>
+
+uint8_t t_nt,t_at,t_lo,t_hi;
+uint64_t tiledata;
+int scanline;
+int cycle;
+bool odd_frame;
 // just discover a huge bug in the ppu Jul 22 2016 from not reading the documentation correctly about ppu io reg 2007
 // below is needed to fix this bug
 // todo explain better
@@ -76,7 +82,13 @@ static inline void ppu_set_sprite_overflow(bool yesno){
 		BIT_CLEAR(ppu.PPUSTATUS,5);
 	}	
 }
+static inline bool is_rendering_enabled(){
+	return ppu_is_show_bg() || ppu_is_show_sprites();
+}
 void ppu_init(){
+	scanline = 240;
+	odd_frame = false;
+	cycle = 340;
 	memset(&ppu,0,sizeof(ppu));
 	// why..? avoid magic values..
 	ppu.PPUSTATUS = 0xa0;
@@ -290,6 +302,7 @@ void inline ppu_cpy(uint16_t dst, uint8_t* src, int len){
 // Todo this really bad.. avoid magic number.. avoid magic number..
 // This will implement loopy fine scrolling refer to NES wiki documentation
 // TODO better documentation..
+/*
 void ppu_draw_bg_scanline(){
 	//cx:coarseX , cy: coarsey , na: name address , aa: attribute address
 	int cx,cy,na,aa;
@@ -298,7 +311,8 @@ void ppu_draw_bg_scanline(){
 	cx = (lv & 0x1f);
 	cy = (lv & 0x3e) >> 5;
 	na = 0x2000 | (lv & 0x0fff);
-	aa = 0x2000 + (lv & 0x0c00) + 0x03c0 + ((cy & 0xfffc) << 1) + (cx >> 2);
+	//aa = 0x2000 + (lv & 0x0c00) + 0x03c0 + ((cy & 0xfffc) << 1) + (cx >> 2);
+	aa = 0x23c0 | (lv & 0x0c00) | ((cy & 0xfffc) << 1) | (cx >> 2);
 	bool top = (cy & 0x0002) == 0; // is it top?
 	bool left = (cx & 0x0002) == 0; // is it left ?
 	
@@ -406,85 +420,8 @@ void ppu_draw_bg_scanline(){
 		lv +=0x1000;
 	}
 }
-/*
-// draw the background,, parameter (mirror yesno)
-void ppu_draw_bg_scanline(bool m){
-	//tile x
-	int tx;
-	
-	// there is 32 tiles in the the x axis screenW/8 the tile size is 8 pixel
-	// potential optimization.. just invert the boolean.. 
-	for(tx=ppu_is_bg_showed_in_leftmost_8px() ? 0 : 1; tx<32; tx++){
-		// skip off screen pixels
-		if(((tx<<3) - ppu.PPUSCROLL_X + (m ? SCREEN_W:0)) > SCREEN_W)
-			continue;
-		
-		// divide scanline by 8 to get the y tile
-		//tile y
-		int ty = ppu.scanline >> 3;
-		// tile index = ti,, tile address = ta
-		int ti = ppu_rb(ppu_get_nametable_base_addr() + tx + (ty << 5) + (m ? 0x400 : 0));
-		// each pattern is 16 bytes hence 16*ti // TODO better explaination refer to NES documentation
-		int ta = ppu_get_bg_pattern_table_addr() + (16*ti);
-		
-		// y inside tile range : 0 - 7
-		// from the scanline.. we are intrested in the lower 3 bits
-		int yit = ppu.scanline & 0x7;
-		// low and high bytes that construct the tile pattern
-		uint8_t l = ppu_rb(ta+yit);
-		uint8_t h = ppu_rb(ta+yit+8);
-		
-		// x inside tile range : 0 -7
-		int xit;
-		for(xit=0;xit<8;xit++){
-			// instead of looping each time to construct the pattern from l & h use lookup cache table
-			// c for color range from 0 - 3
-			// c is not the actual color one more step is needed which is getting the attribute and look at palette table
-			uint8_t c = ppu_l_h_cache[l][h][xit];
-			// c = 0 is transparent
-			if(c != 0){
-				// aa: attribute address,, 0x3c0 is the offset for the attribute table from the nametable base address TODO more documentation
-				// basiclly we add attribute table offest to the nametable base.. check for mirror to move to other nametable if needed add this to tile x / 4 + scanline / 32 * 8
-				// Refer to NES documentation
-				uint16_t aa = (ppu_get_nametable_base_addr() + (m ? 0x400:0) + 0x3c0 + (tx >> 2) + (ppu.scanline >>5) * 8);
-				
-				// since each entry in attribute table represent 32x32 pixels or (4x4) tiles each 4 tile belongs to {tl,tr,bl,br} t:top,l:left,b:bottom,r:right
-				// TODO better documentation.. refer to NES documentation
-				// here we check in which area are we {tl,tr,bl,br} ?
-				// this is needed to extract the 2-bit position in the byte:{##,##,##,##}
-				// these 2-bits along with the 2-bits (c value above) construct the color index
-				
-				bool top = (ppu.scanline % 32) < 16; // is it top?
-				bool left = (tx % 32 < 16); // is it left ?
-				
-				// read pa: palette attribute
-				// pa:{tl,tr,bl,br} 
-				uint8_t pa = ppu_rb(aa);
-				// here we extract the 2bits based on the area
-				if(top)
-					pa>>=4;
-				if(left)
-					pa>>=2;
-				pa&=3; // ensure only 2 bits value is there..
-				
-				// paddr:palette address (base is 0x3f00) TODO put is as defind or const avoid magic numbers..
-				// based on the palette attribute we offset the background palette table total of 4 bg palettes
-				// so the palette attribute index which bg palette to use from the four
-				// each bg pallete has 4 colors inside the 2-bit (c value obtained above will index the bg pallete)
-				uint16_t paddr = 0x3f00 + (pa<<2);
-				// ci: color index
-				int ci = ppu_rb(paddr + c);
-				// now we have the color index the x,y position..
-				// we can draw to the frame buffer..
-				putp(bg,(tx<<3) + xit - ppu.PPUSCROLL_X + (m?256:0),ppu.scanline+1,ci);
-				
-				// store for sprite0 hit
-				ppu_bg[(tx<<3)+xit][ppu.scanline] = c;
-			}
-		}
-	}
-}
 */
+
 void ppu_draw_sprite_scanline(){
 	// to check for sprite overflow
 	int sprite_count_per_scanline = 0;
@@ -556,17 +493,203 @@ void ppu_draw_sprite_scanline(){
 		}
 	}
 }
+/*
 void ppu_run(int cycles){
 	while(cycles-- > 0){
 		ppu_cycle();
 	}
 }
+*/
 
-void ppu_tick(void){
-	
-}
+
+#define PRE_LINE        scanline==261
+#define VISIBLE_LINE    scanline<240
+#define RENDER_LINE     (scanline==261 || scanline<240)
+#define PRE_FETCHCYCLE  (cycle>=321 && cycle<=336)
+#define VISIBLE_CYCLE   (cycle>=1 && cycle<=256)
+#define FETCH_CYCLE     (PRE_FETCHCYCLE||VISIBLE_CYCLE)
+
+#define VBLANK_START    scanline==241 && cycle==1
+#define VBLANK_END scanline==261 && cycle==1
+
 // FIXME bad practice cpu instance should be inside the cpu and encabsulated 
 extern cpu_t cpu;
+
+static inline void render_pixel(){
+	// render pixel
+	int x,y;
+	x = cycle - 1;
+	y = scanline;
+	if(ppu_is_show_bg()){
+		uint8_t pdata;
+		pdata = ((tiledata>>32)>>((7-lx)*4))&0xf;
+		uint8_t ci = ppu_rb(0x3f00 + pdata);
+		putp(bg,x,y,ci);
+	}
+}
+static inline void fetch_pixel(){
+	int cx,cy,aa,ta,i;
+	uint32_t t_data = 0;
+	uint8_t shift;
+	// fetch
+			tiledata <<= 4;
+			switch(cycle%8){
+				case 1: // fetch nametable index
+					t_nt = ppu_rb(0x2000 | (lv & 0x0fff));
+					break;
+				case 3: // fetch attribute byte
+					cx = (lv & 0x1f);
+					cy = (lv & 0x3e) >> 5;
+					aa = 0x23c0 | (lv & 0x0c00) | ((cy & 0xfffc) << 1) | (cx >> 2);
+					shift = (cx & 0x2) | ((cy&0x2)<<1);
+					t_at = ((ppu_rb(aa)>>shift)&0x3)<<2;
+					break;
+				case 5: // fetch tile low byte
+					ta = ppu_get_bg_pattern_table_addr() + (16*t_nt) + ((lv&0x7000)>>12);
+					t_lo = ppu_rb(ta);
+					break;
+				case 7:	// fetch tile high byte
+					ta = ppu_get_bg_pattern_table_addr() + (16*t_nt) + ((lv&0x7000)>>12);
+					t_hi = ppu_rb(ta+8);
+					break;
+				case 0: // looks ugly putting zero at the end.. this is struct the full 8x8 tile
+					for(i=0;i<8;++i){
+						t_data <<= 4;
+						t_data |= t_at | ppu_l_h_cache[t_lo][t_hi][i];
+					}
+					tiledata |= t_data;
+					break;
+			}
+}
+
+static inline void increment_x(){
+	if((lv&0x1f) == 31){
+		lv &= 0xffe0;
+		lv ^= 0x400;
+	}else
+		lv++;
+}
+
+static inline void increment_y(){
+	if((lv&0x7000) != 0x7000)
+		lv += 0x1000;
+	else{
+		uint16_t y;
+		lv &= 0x8fff;
+		y = (lv&0x03e0)>>5;
+	if(y==29){
+		y = 0;
+		lv ^= 0x800;
+	}else
+	if(y==31)
+		y = 0;
+	else
+		y++;
+
+	lv &= 0xfc1f;
+	lv |= (y<<5);
+	}
+}
+
+static inline void copy_hor_v(){
+	lv &= 0xfbe0;
+	lv |= (lt&0x41f);
+}
+
+static inline void copy_ver_v(){
+	lv &= 0x841f;
+	lv |= (lt&0x7be0);
+}
+
+static inline void increment_cycle(){
+	if(++cycle == 341){
+		cycle = 0;
+		if(++scanline == 262){
+			scanline = 0;
+			odd_frame ^= 1;
+		}
+	}
+}
+void ppu_tick(void){
+	
+    if(is_rendering_enabled()){
+        if(odd_frame==1 && PRE_LINE && cycle==339)
+        {
+            cycle = 0;
+            scanline = 0;
+            odd_frame ^= 1;
+            return;
+        }
+	}
+	
+	if(is_rendering_enabled()){
+		if(VISIBLE_LINE && VISIBLE_CYCLE){
+			render_pixel();
+		}
+		
+		if(RENDER_LINE && FETCH_CYCLE){
+			fetch_pixel();
+		}
+		
+		if(PRE_LINE && cycle>=280 && cycle<=304){
+            copy_ver_v();
+        }
+
+        // increment counters
+        if(RENDER_LINE){
+            // increment X
+            if(FETCH_CYCLE && cycle%8==0)
+            {
+               increment_x();
+            }
+
+            // increment Y
+            if(cycle==256)
+            {
+				increment_y();
+            }
+
+            // copy X
+            if(cycle==257)
+            {
+                copy_hor_v();
+            }
+
+		
+		}
+	
+	}
+	// start vblank logic
+    if(VBLANK_START){
+		ppu_set_vblank(true);
+		ppu_set_sprite0_hit(false);
+		cpu_trigger_nmi(&cpu);
+    }
+
+    // end vblank logic
+    if(VBLANK_END){
+		
+        ppu_sprite0_hit_occured = false;
+		ppu_set_vblank(false);
+		emu_update_screen();
+	}
+	
+	increment_cycle();
+	
+	/*
+	if(scanline < 240){ // visible scanlines
+		
+	}else if(scanline = 240){ // post render scanline
+		
+	}else if(scanline >= 241 && scanline <=260){ // Vblank scanlines
+		
+	}else if(scanline = 260){ // pre-render scanline
+		
+	}
+	*/
+}
+
+/*
 void ppu_cycle(){
 	//printf("we are in ppu cycle.. and scanline is : %d \n",ppu.scanline);
 	// should I check ppu if it's ready or not ?
@@ -599,7 +722,7 @@ void ppu_cycle(){
 		emu_update_screen();
 	}
 }
-
+*/
 inline void ppu_oam_wb(uint8_t data){
 	ppu_oam[ppu.OAMADDR++] = data;
 }
