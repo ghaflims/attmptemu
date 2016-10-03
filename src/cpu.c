@@ -763,7 +763,5 @@ void cpu_exec(cpu_t* cpu, long cycles){
 	int i = 0;
 	for(i=0;i<ticktable[op]*3;i++)
 		ppu_tick();
-	
-//	print_debug(cpu,op);
 	}
 }

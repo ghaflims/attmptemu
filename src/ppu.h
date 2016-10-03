@@ -37,6 +37,7 @@ static const uint16_t ppu_base_nametable_addrs[4] = {0x2000,0x2400,0x2800,0x2c00
 uint8_t ppu_ram[0x4000];
 //256 bytes for sprite memory
 uint8_t ppu_oam[0x100];
+uint8_t ppu_oam2[8*4]; // 8 sprites each takes 4 bytes
 // cached values for the low and high pattern this is to speed up it's just a look up..
 // span all the possibilities from 0 - 255
 uint8_t ppu_l_h_cache[256][256][8];

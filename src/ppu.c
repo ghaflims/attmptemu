@@ -6,9 +6,28 @@
 #include <string.h>
 #include <stdio.h>
 
+// cpu cycles
+uint32_t cpu_cyc_b;
+uint32_t cpu_cyc_e;
+uint32_t cpu_cyc_frame;
+// should these be defined as static?
+// oam,oam2 address overflow and sprite overflow (of:overflow)
+bool sprite_in_range, overflow_detection, oam_addr_of, oam2_addr_of, sprite_of, s0_on_next_scanline,s0_on_cur_scanline;
+
+// should below be static?
+uint8_t sprite_attribs[8];
+uint8_t sprite_x[8];
+uint8_t sprite_l[8];
+uint8_t sprite_h[8];
+uint8_t sprite_y,sprite_index;
+uint64_t frame_count;
+uint8_t copy_sprite_signal;
+
+uint8_t oam2_addr;
 uint8_t t_nt,t_at,t_lo,t_hi;
 uint64_t tiledata;
-int scanline;
+// there was a bug because not using unsigned when calculating in_range scanline was 32 and the data was 0x77 resulting in -87 because it was signed substraction :/
+unsigned int scanline;
 int cycle;
 bool odd_frame;
 // just discover a huge bug in the ppu Jul 22 2016 from not reading the documentation correctly about ppu io reg 2007
@@ -44,6 +63,9 @@ static inline uint16_t ppu_get_nametable_base_addr(){
 	return ppu_base_nametable_addrs[ppu.PPUCTRL&0x3];
 }
 bool ppu_is_bg_showed_in_leftmost_8px(){
+	return BIT_CHECK(ppu.PPUMASK,1);
+}
+bool ppu_is_sprite_showed_in_leftmost_8px(){
 	return BIT_CHECK(ppu.PPUMASK,2);
 }
 bool ppu_is_nmi_enabled(void){
@@ -87,8 +109,10 @@ static inline bool is_rendering_enabled(){
 }
 void ppu_init(){
 	scanline = 240;
+	frame_count = 0;
 	odd_frame = false;
 	cycle = 340;
+	copy_sprite_signal = 0;
 	memset(&ppu,0,sizeof(ppu));
 	// why..? avoid magic values..
 	ppu.PPUSTATUS = 0xa0;
@@ -136,6 +160,7 @@ inline uint8_t ppu_rb(uint16_t addr){
 void ppu_wb(uint16_t addr, uint8_t data){
 	ppu_ram[ppu_get_real_address(addr)] = data;
 }
+
 uint8_t ppu_ior(uint16_t addr){
 	switch(addr & 7){
 		// use curly braces to scop variable decleration.. becasue case work with statment not variable decleration
@@ -170,21 +195,6 @@ uint8_t ppu_ior(uint16_t addr){
 			value = data_latch;
 			data_latch = ppu_rb(lv & 0x3fff);
 			lv += BIT_CHECK(ppu.PPUCTRL,2) ? 32:1;
-			//lv &= 0x7fff;
-			
-			/*
-			if(ppu.PPUADDR >= 0x3f00)
-				data_latch = ppu_rb(ppu.PPUADDR);
-			value = data_latch;
-			data_latch = ppu_rb(ppu.PPUADDR);
-			// should this be more clear.. refer to ppu docs
-			// the if condition is to fix the bug
-			//if(ppu_2007_1st_read){
-				ppu_2007_1st_read = false;
-			//}else{
-				ppu.PPUADDR += BIT_CHECK(ppu.PPUCTRL,2) ? 32:1;
-			//}
-			*/
 			return value;
 			break;
 		}
@@ -271,26 +281,8 @@ void ppu_iow(uint16_t addr, uint8_t data){
 				// refer to nes documentation
 			
 			lv += BIT_CHECK(ppu.PPUCTRL,2) ? 32:1;
-			//lv &= 0x7FFF;
 			break;
 			
-			
-			/*
-			ppu.PPUADDR &= 0x3FFF;
-			// take care of mirroring V/H
-			if(ppu.PPUADDR >= 0x2000 && ppu.PPUADDR < 0x4000 ){
-				ppu_wb(ppu.PPUADDR ^ ppu.mirroring_xor, data);
-				ppu_wb(ppu.PPUADDR, data);
-			}else{
-				ppu_wb(ppu.PPUADDR, data);
-			}
-			// this was a bug I didn't increament when writing only when reading..
-			// TODO avoid magic numbers and put it in function
-			// refer to nes documentation
-			ppu.PPUADDR += BIT_CHECK(ppu.PPUCTRL,2) ? 32:1;
-			//ppu.PPUADDR &= 0x3FFF;
-			break;
-			*/
 		}
 	}
 }
@@ -298,208 +290,6 @@ void ppu_iow(uint16_t addr, uint8_t data){
 void inline ppu_cpy(uint16_t dst, uint8_t* src, int len){
 	memcpy(&ppu_ram[dst],src,len);
 }
-
-// Todo this really bad.. avoid magic number.. avoid magic number..
-// This will implement loopy fine scrolling refer to NES wiki documentation
-// TODO better documentation..
-/*
-void ppu_draw_bg_scanline(){
-	//cx:coarseX , cy: coarsey , na: name address , aa: attribute address
-	int cx,cy,na,aa;
-	lv &= 0xfbe0;
-	lv |= (lt & ~0xfbe0);
-	cx = (lv & 0x1f);
-	cy = (lv & 0x3e) >> 5;
-	na = 0x2000 | (lv & 0x0fff);
-	//aa = 0x2000 + (lv & 0x0c00) + 0x03c0 + ((cy & 0xfffc) << 1) + (cx >> 2);
-	aa = 0x23c0 | (lv & 0x0c00) | ((cy & 0xfffc) << 1) | (cx >> 2);
-	bool top = (cy & 0x0002) == 0; // is it top?
-	bool left = (cx & 0x0002) == 0; // is it left ?
-	
-	// read pa: palette attribute
-	// pa:{tl,tr,bl,br} 
-	uint8_t pa = ppu_rb(aa);
-	// here we extract the 2bits based on the area
-	if(top)
-		pa>>=4;
-	if(left)
-		pa>>=2;
-	pa&=3; // ensure only 2 bits value is there..
-	
-	// tc: tile count
-	int tc;
-	for(tc=0; tc<33; tc++){
-		// TODO better explaination refer to NES documentation
-		int ta = ppu_get_bg_pattern_table_addr() + (16*ppu_rb(na)) + ((lv&0x7000)>>12);
-		uint8_t l = ppu_rb(ta);
-		uint8_t h = ppu_rb(ta+8);
-		//int i;
-		// xit:x in tile;
-		int xit;
-		if(tc==0 && lx!=0){
-			for(xit=0;xit<8-lx;xit++){
-				uint8_t c = ppu_l_h_cache[l][h][xit+lx];
-				ppu_bg[(tc<<3)+xit][ppu.scanline] = c;
-				if(c != 0){
-					uint16_t paddr = 0x3f00 + (pa<<2);
-					// ci: color index
-					int ci = ppu_rb(paddr + c);
-					if(ppu.scanline > 7)
-						putp(bg,(tc<<3) + xit,ppu.scanline-8,ci);
-					else
-						putp(bg,(tc<<3) + xit,ppu.scanline,ci);
-				}
-			}	
-		}else if(tc==32 && lx!=0){
-			for(xit=0;xit<lx;xit++){
-				uint8_t c = ppu_l_h_cache[l][h][xit];
-				ppu_bg[(tc<<3) + xit- lx][ppu.scanline] = c;
-				if(c != 0){
-					uint16_t paddr = 0x3f00 + (pa<<2);
-					// ci: color index
-					int ci = ppu_rb(paddr + c);
-					if(ppu.scanline > 7)
-						putp(bg,(tc<<3) + xit - lx,ppu.scanline-8,ci);
-					else
-						putp(bg,(tc<<3) + xit - lx,ppu.scanline,ci);
-				}
-			}	
-		}else{
-			for(xit=0;xit<8;xit++){
-				uint8_t c = ppu_l_h_cache[l][h][xit];
-				ppu_bg[(tc<<3)+xit -lx][ppu.scanline] = c;
-				if(c != 0){
-					uint16_t paddr = 0x3f00 + (pa<<2);
-					// ci: color index
-					int ci = ppu_rb(paddr + c);
-					if(ppu.scanline > 7)
-						putp(bg,(tc<<3) + xit - lx,ppu.scanline-8,ci);
-					else
-						putp(bg,(tc<<3) + xit - lx,ppu.scanline,ci);
-				}
-			}	
-		}
-		na++;
-		cx++;
-		if((cx & 0x0001) == 0){
-			if((cx & 0x0003) == 0){
-				if((cx&0x1f) == 0){
-					na ^= 0x0400; 
-					aa ^= 0x0400;
-					na -= 0x0020;
-					aa -= 0x0008;
-					cx -= 0x0020;
-				}
-				aa++;
-			}
-			
-			uint8_t pa = ppu_rb(aa);
-			if(top)
-				pa>>=4;
-			if(left)
-				pa>>=2;
-			pa&=3; // ensure only 2 bits value is there..
-		}
-
-	}
-	
-	if((lv & 0x7000) == 0x7000)	{
-		lv &= 0x8fff;
-		
-		if((lv & 0x03e0) == 0x03a0){
-			lv ^= 0x0800;
-			lv &= 0xfc1f;
-		}else{
-			if((lv & 0x3e0) == 0x03e0){
-				lv &= 0xfc1f;
-			}else{
-				lv += 0x0020; 
-			}
-		}
-	}else{
-		lv +=0x1000;
-	}
-}
-*/
-
-void ppu_draw_sprite_scanline(){
-	// to check for sprite overflow
-	int sprite_count_per_scanline = 0;
-	
-	int i;
-	
-	// loop through the oam (64 * 4 per sprites = 0x100 or 256)
-	for(i=0;i<0x100;i+=4){
-		// sx:sprite x location (offset 3), sy:sprite y location (offset 0)
-		uint8_t sx = ppu_oam[i+3];
-		uint8_t sy = ppu_oam[i];
-		
-		// check if the sprite on the scanline and skip if not
-		if(sy > ppu.scanline || (sy + ppu_get_sprite_height()) < ppu.scanline)
-			continue;
-		
-		sprite_count_per_scanline++;
-		
-		// sptires overflow.. PPU can't handle more than 8 sprites per scanline
-		if(sprite_count_per_scanline > 8)
-			ppu_set_sprite_overflow(true);
-			
-		// vf:vflip,, hf: hflip
-		// TODO avoid magic numbers
-		bool vf = ppu_oam[i+2] & 0x80;
-		bool hf = ppu_oam[i+2] & 0x40;
-		
-		// offset 1 from oam is the tile index
-		uint16_t ta = ppu_get_sprite_pattern_table_addr() + (16* ppu_oam[i+1]);
-		
-		// yit:y in tile
-		int yit = ppu.scanline &0x7;
-		// low and high bytes that construct the tile pattern
-		uint8_t l = ppu_rb(ta + (vf ? (7-yit) : yit));
-		uint8_t h = ppu_rb(ta + (vf ? (7-yit) : yit) + 8);
-		
-		// pa: palette attribute
-		uint8_t pa = ppu_oam[i+2] & 0x3;
-		// TODO avoid magic numbers 0x3f10 is the start of sprites pallette address
-		uint16_t paddr = 0x3f10 + (pa << 2);
-		// x: x in tile
-		int xit;
-		for(xit=0;xit<8;xit++){
-			// c:color
-			int c = hf ? ppu_l_h_flip_cache[l][h][xit] : ppu_l_h_cache[l][h][xit];
-			// skip if color 0 (transparent)
-			if (c != 0){
-				int x = sx + xit;
-				int idx = ppu_rb(paddr + c);
-				
-				// TODO better documentation.. refer to NES documentations
-				if(ppu_oam[i+2] & 0x20){
-					if(ppu.scanline>7)
-						putp(bbg,x,sy+yit+1-8,idx);
-					else
-						putp(bbg,x,sy+yit+1,idx);
-				}else{
-					if(ppu.scanline>7)
-						putp(fg,x,sy+yit+1-8,idx);
-					else
-						putp(fg,x,sy+yit+1,idx);
-				}
-				
-				if(ppu_is_show_bg() && !ppu_sprite0_hit_occured && i==0 && ppu_bg[sx][sy+yit] != 0){
-					ppu_set_sprite0_hit(true);
-					ppu_sprite0_hit_occured = true;
-				}
-			}
-		}
-	}
-}
-/*
-void ppu_run(int cycles){
-	while(cycles-- > 0){
-		ppu_cycle();
-	}
-}
-*/
 
 
 #define PRE_LINE        scanline==261
@@ -520,11 +310,36 @@ static inline void render_pixel(){
 	int x,y;
 	x = cycle - 1;
 	y = scanline;
+	uint8_t pdata;
 	if(ppu_is_show_bg()){
-		uint8_t pdata;
 		pdata = ((tiledata>>32)>>((7-lx)*4))&0xf;
 		uint8_t ci = ppu_rb(0x3f00 + pdata);
 		putp(bg,x,y,ci);
+	}
+	if(ppu_is_show_sprites()){
+		int i;
+		for(i=0;i<8;i++){
+			uint8_t offset = x - sprite_x[i];
+			if(offset < 8){
+				uint8_t l = sprite_l[i];
+				uint8_t h = sprite_h[i];
+				uint8_t sprite_pat = (sprite_attribs[i] & 0x40) ? ppu_l_h_flip_cache[l][h][offset]:ppu_l_h_cache[l][h][offset];
+				if(sprite_pat){
+					if(sprite_attribs[i] & 0x20){ // behind bg
+						putp(bbg,x,scanline,ppu_rb(0x3f10 + ((sprite_attribs[i]&3)<<2) + sprite_pat));
+					}else{ // in front bg
+						putp(fg,x,scanline,ppu_rb(0x3f10 + ((sprite_attribs[i]&3)<<2) + sprite_pat));
+					}
+					if(!ppu_sprite0_hit_occured && i==0 && s0_on_cur_scanline && sprite_x[i]!=255 && (pdata&3) && ppu_is_show_bg() && (sprite_x[i] >= (ppu_is_sprite_showed_in_leftmost_8px() ? 0 : 8)) && (x >= (ppu_is_bg_showed_in_leftmost_8px() ? 0 : 8))){
+						ppu_set_sprite0_hit(true);
+						cpu_cyc_b = cpu.cyc;
+						cpu_cyc_e = 0;
+						ppu_sprite0_hit_occured = true;
+						printf("Sprit Hit0 occured on: SL:%d,PPU CYC:%d\n",scanline,cycle);
+					}
+				}
+			}
+		}
 	}
 }
 static inline void fetch_pixel(){
@@ -607,17 +422,152 @@ static inline void increment_cycle(){
 		if(++scanline == 262){
 			scanline = 0;
 			odd_frame ^= 1;
+			frame_count++;
 		}
 	}
 }
-void ppu_tick(void){
+
+uint16_t ppu_addr_bus;
+
+static void move_to_next_oam_byte(){
+	ppu.OAMADDR = (ppu.OAMADDR + 1) & 0xff; // is the masking needed it's just 8 bit?
+	oam2_addr = (oam2_addr + 1) & 0x1f;
 	
+	if(ppu.OAMADDR == 0)
+		oam_addr_of = true;
+		
+	if(oam2_addr == 0){
+		oam2_addr_of = true;
+		overflow_detection = true;
+	}
+}
+static void sprite_eval(){ // do sprite evaluation
+	if(cycle == 65){
+		// clear overflow flags and oam2 address variables
+		oam_addr_of = oam2_addr_of = sprite_of = false;
+		oam2_addr = 0;
+	}
+	
+	if(cycle & 1){
+		// read oam data
+		ppu.OAMDATA = ppu_oam[ppu.OAMADDR];
+		return;
+	}
+	
+	// here we need to save the orignal oam data
+	// the question is why..?
+	
+	uint8_t orig_oam_data = ppu.OAMDATA;
+	
+	// on even cycles data is written to oam2
+	if(!(oam_addr_of || oam2_addr_of)){
+		ppu_oam2[oam2_addr] = ppu.OAMDATA;
+	}else{
+		ppu.OAMDATA = ppu_oam2[oam2_addr];
+	}
+	
+	if(copy_sprite_signal > 0){
+		--copy_sprite_signal;
+		//move to next oam byte;
+		move_to_next_oam_byte();
+		return;
+	}
+	bool in_range = (scanline - orig_oam_data) < ppu_get_sprite_height();
+	// evaluate sprite hit0 at cycle 66
+	if(cycle == 66)
+		s0_on_next_scanline = in_range;
+	
+	if(in_range && !(oam_addr_of || oam2_addr_of)){
+		// we are in range copy the rest 3 bytes (index,attribute,x-pos)
+		copy_sprite_signal = 3;
+		move_to_next_oam_byte();
+		return; // I hate this.. todo replace with else one return should be in the function
+	}
+	
+	if(!overflow_detection){
+		ppu.OAMADDR = (ppu.OAMADDR + 4) & 0xfc;
+		if(ppu.OAMADDR == 0)
+			oam_addr_of = true;
+	}else{
+		if(in_range && !oam_addr_of){
+			sprite_of = true;
+			overflow_detection = false;
+		}else{
+			ppu.OAMADDR = ((ppu.OAMADDR + 4) & 0xfc) | ((ppu.OAMADDR + 1) & 3);
+			if((ppu.OAMADDR & 0xfc) == 0)
+				oam_addr_of = true;
+		}
+	}
+		
+	
+}
+
+// return true if sprite is in range
+static bool calc_sprite_tile_addr(uint8_t y, uint8_t index, uint8_t attrib, bool is_high){
+	uint8_t diff = scanline - y;
+	// check if there is a vertical flip and ajust address accordingly
+	uint8_t diff_y_flip = (attrib & 0x80) ? ~diff : diff;
+	if(diff<16){
+		//printf("y_sprite:%d,diff:%d,y:%d,CYC:%d,F#:%lld\n",y,diff,scanline,cycle,frame_count);
+	}
+	if(ppu_get_sprite_height() == 8){
+		ppu_addr_bus = ppu_get_sprite_pattern_table_addr() + 16*index + 8*is_high + (diff_y_flip & 7);
+		return diff < 8;
+	}else{
+		ppu_addr_bus = 0x1000*(index&1) + 16*(index & 0xfe) + ((diff_y_flip & 8) << 1) + 8*is_high + (diff_y_flip & 7);
+		return diff < 16;
+	}
+}
+
+static void sprite_fetch(){
+	//sprite number
+	uint8_t sprite_n = (cycle-257)/8;
+	
+	if(cycle == 257)
+		oam2_addr = 0;
+	
+	s0_on_cur_scanline = s0_on_next_scanline;
+	
+	switch((cycle - 1) % 8){
+		case 0:
+			sprite_y = ppu_oam2[oam2_addr];
+			oam2_addr = (oam2_addr + 1) & 0x1f;
+			break;
+		case 1:
+			sprite_index = ppu_oam2[oam2_addr];
+			oam2_addr = (oam2_addr + 1) & 0x1f;
+			break;
+		case 2:
+			sprite_attribs[sprite_n] = ppu_oam2[oam2_addr];
+			oam2_addr = (oam2_addr + 1) & 0x1f;
+			break;
+		case 3:
+			sprite_x[sprite_n] = ppu_oam2[oam2_addr];
+			oam2_addr = (oam2_addr + 1) & 0x1f;
+			break;
+		case 4:
+			sprite_in_range = calc_sprite_tile_addr(sprite_y, sprite_index,sprite_attribs[sprite_n],false);
+			break;
+		case 5:
+			sprite_l[sprite_n] = sprite_in_range ? ppu_rb(ppu_addr_bus) : 0;
+			break;
+		case 6:
+			sprite_in_range = calc_sprite_tile_addr(sprite_y, sprite_index,sprite_attribs[sprite_n],true);
+			break;
+		case 7:
+			sprite_h[sprite_n] = sprite_in_range ? ppu_rb(ppu_addr_bus) : 0;
+			break;	
+	}
+}
+
+void ppu_tick(void){
     if(is_rendering_enabled()){
         if(odd_frame==1 && PRE_LINE && cycle==339)
         {
             cycle = 0;
             scanline = 0;
             odd_frame ^= 1;
+            frame_count++;
             return;
         }
 	}
@@ -625,6 +575,19 @@ void ppu_tick(void){
 	if(is_rendering_enabled()){
 		if(VISIBLE_LINE && VISIBLE_CYCLE){
 			render_pixel();
+			
+			if(cycle >= 1 && cycle <= 64){ // this is really bad optimize
+				// clear oam2
+				if(cycle & 1){ // on Odd cycles
+					ppu.OAMDATA = 0xff;
+				}else{
+					ppu_oam2[oam2_addr] = ppu.OAMDATA;
+					oam2_addr = (oam2_addr + 1) & 0x1f; // this is to cap increment to 31 max
+				}
+			}
+			if(cycle >=65 && cycle <= 256){// this is really bad optimize
+				sprite_eval();
+			}
 		}
 		
 		if(RENDER_LINE && FETCH_CYCLE){
@@ -637,6 +600,10 @@ void ppu_tick(void){
 
         // increment counters
         if(RENDER_LINE){
+			if(cycle >= 257 && cycle <=320){
+				sprite_fetch();
+				ppu.OAMADDR = 0;
+			}
             // increment X
             if(FETCH_CYCLE && cycle%8==0)
             {
@@ -662,17 +629,25 @@ void ppu_tick(void){
 	// start vblank logic
     if(VBLANK_START){
 		ppu_set_vblank(true);
-		ppu_set_sprite0_hit(false);
 		cpu_trigger_nmi(&cpu);
     }
 
     // end vblank logic
     if(VBLANK_END){
-		
-        ppu_sprite0_hit_occured = false;
+		if(BIT_CHECK(ppu.PPUSTATUS,6)){
+			cpu_cyc_e = cpu.cyc;
+			printf("Im in\n");
+		}
+		ppu_set_sprite0_hit(false);
+		ppu_sprite0_hit_occured = false;
+		sprite_of = s0_on_next_scanline = false;
 		ppu_set_vblank(false);
 		emu_update_screen();
+		cpu_cyc_frame = cpu_cyc_e - cpu_cyc_b;
+		printf("frame#:%lld, CPU cyc:%d, SL:%d, PPU cyc:%d\n",frame_count,cpu_cyc_frame,scanline,cycle);
 	}
+	
+	
 	
 	increment_cycle();
 	
@@ -689,40 +664,7 @@ void ppu_tick(void){
 	*/
 }
 
-/*
-void ppu_cycle(){
-	//printf("we are in ppu cycle.. and scanline is : %d \n",ppu.scanline);
-	// should I check ppu if it's ready or not ?
-	// wouldn't this give cpu cycles to the initial prg to initilize the system?
-	// TODO check for above
-	ppu.scanline++;
-	//printf("%d\n",ppu.scanline);
-	if(ppu.scanline == 0)
-		lv = lt;
-	if(ppu_is_show_bg()){
-		//printf("im rendering bg \n");
-		//ppu_draw_bg_scanline(false);
-		ppu_draw_bg_scanline(); // why TODO check..
-	}
-	
-	if(ppu_is_show_sprites())
-		ppu_draw_sprite_scanline();
-	// TODO avoid magic numbers and explain..
-	// explain about the ppu frame life cycle.. Refer to NES documentation
-	if(ppu.scanline == 241){
-		// we are in a vblank
-		ppu_set_vblank(true);
-		ppu_set_sprite0_hit(false);
-		cpu_trigger_nmi(&cpu);
-		//printf("Im in vblank and cpu pc is : %02X\n",cpu.pc);
-	}else if(ppu.scanline >= 262){
-		ppu.scanline = -1;
-		ppu_sprite0_hit_occured = false;
-		ppu_set_vblank(false);
-		emu_update_screen();
-	}
-}
-*/
+
 inline void ppu_oam_wb(uint8_t data){
 	ppu_oam[ppu.OAMADDR++] = data;
 }

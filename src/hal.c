@@ -29,6 +29,7 @@ void parse_events(){
 }
 
 void wait_for_frame(){
+	//SDL_Delay(16);
 	SDL_Delay(16);
 }
 void hal_set_bg_color(int c){
