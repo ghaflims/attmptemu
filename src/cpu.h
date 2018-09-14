@@ -55,8 +55,11 @@ static const char opcode_str[256][15] = {
 
 typedef struct{
   uint32_t cyc;
+  uint32_t extra_cyc;
+  uint32_t nmi_cyc;
   uint16_t pc;
   uint8_t x,y,a,sp;
+  uint8_t op;
   union{
       uint8_t sr;
       struct{

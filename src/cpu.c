@@ -5,6 +5,7 @@
 #include "helper.h"
 #include "debug.h"
 
+int debug_flag = 0;
 uint8_t cpu_ram[0x8000] = {0};
 static inline uint16_t nmi_vector_address(){
 	return (rb(NMI_VEC) | (rb(NMI_VEC+1)<<8)); 
@@ -35,6 +36,7 @@ void cpu_trigger_nmi(cpu_t* cpu){
 		push(cpu,cpu->pc&0xff);
 		push(cpu,cpu->sr);
 		cpu->pc=nmi_vector_address();
+		//cpu->nmi_cyc=7;
 	}
 }
 
@@ -47,13 +49,30 @@ inline void cpu_ram_iow(uint16_t addr, uint8_t data){
 
 void cpu_exec(cpu_t* cpu, long cycles){
 	while(cycles>0){
+		cpu->extra_cyc=0;
+		if(cpu->pc == 0x8d4f){
+			debug_flag = 0;
+		}
+		if(cpu->pc == 0x8d68){
+			debug_flag = 0;
+			mem_dump(&cpu_ram[0x0325], 8);
+		}
+		if(debug_flag){
+			print_debug(cpu,rb(cpu->pc));
+			mem_dump(&cpu_ram[0x0020], 0x20);
+		}
 		uint8_t op = rb(cpu->pc++);
+		cpu->op = op;
 		// update the cycle timing.. this will not take in account page crossing or special additional timing..
 		cpu->cyc+=ticktable[op];
 		// temp address to be used inside case statment
 		uint16_t ta=0;
 		// temp value to be used inside case statment
 		uint8_t tv=0;
+		// used in the brach to check for page crossing
+		int8_t offset = 0;
+		// used in cross page calculation
+		uint16_t taa=0;
 		switch(op){
 			case ADC_AB:
 				add(cpu,rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),0)));
@@ -62,10 +81,14 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case ADC_ABX:
 				add(cpu,rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x)));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case ADC_ABY:
 				add(cpu,rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->y)));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->y) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case ADC_IMM:
@@ -75,6 +98,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				add(cpu,rb(mem_inx_ind(rb(cpu->pc++),cpu->x)));
 			break;
 			case ADC_INY:
+				taa = mem_ind_inx(rb(cpu->pc),0);
+				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				add(cpu,rb(mem_ind_inx(rb(cpu->pc++),cpu->y)));
 			break;
 			case ADC_ZP:
@@ -90,11 +115,15 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case AND_ABX:
 				cpu->a &= rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->a);
 			break;
 			case AND_ABY:
 				cpu->a &= rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->y));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->y) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->a);
 			break;
@@ -107,6 +136,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flags(cpu,cpu->a);
 			break;
 			case AND_INY:
+				taa = mem_ind_inx(rb(cpu->pc),0);
+				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				cpu->a &= rb(mem_ind_inx(rb(cpu->pc++),cpu->y));
 				set_flags(cpu,cpu->a);
 			break;
@@ -134,6 +165,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				tv = (tv<<1) & 0xfe;
 				set_flags(cpu,tv);
 				wb(ta,tv);
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case ASL_ACC:
@@ -142,12 +175,20 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flags(cpu,cpu->a);
 			break;
 			case ASL_ZP:
-				tv = rb(cpu->pc);
+				ta = rb(cpu->pc++);
+				//tv = rb(cpu->pc); BUGGGGGGGGG
+				tv = rb(ta);
+				if(debug_flag){
+					printf("Address: %04X , Value: %02X \n",ta,tv);
+				}
 				set_flag(cpu,CF,tv&0x80);
 				// is masking unneeded step?
 				tv = (tv<<1) & 0xfe;
+				if(debug_flag){
+					printf("Address: %04X , Value: %02X \n",ta,tv);
+				}
 				set_flags(cpu,tv);
-				wb(cpu->pc++,tv);
+				wb(ta,tv);
 			break;
 			case ASL_ZPX:
 				tv = rb(ZP(cpu->pc + cpu->x));
@@ -159,20 +200,38 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			case BCC_REL:
 				// need to cast value from memory to signed value to support forward and backward brancing :)
 				// don't use ? t:f favor readablity force yourself not no >_<"
+				offset = (int8_t)rb(cpu->pc);
 				if(!cpu->f.c){
-					cpu->pc+=(int8_t)rb(cpu->pc);
+					// check if the branch corsses page
+					if((cpu->pc & 0xff00) != ((cpu->pc + offset) & 0xff00))
+						cpu->extra_cyc++;
+					cpu->pc+=offset;
+					// add extra cycle because the brach succeed
+					cpu->extra_cyc++;
 				}
 				cpu->pc++;
 			break;
 			case BCS_REL:
+				offset = (int8_t)rb(cpu->pc);
 				if(cpu->f.c){
-					cpu->pc+=(int8_t)rb(cpu->pc);
+					// check if the branch corsses page
+					if((cpu->pc & 0xff00) != ((cpu->pc + offset) & 0xff00))
+						cpu->extra_cyc++;
+					cpu->pc+=offset;
+					// add extra cycle because the brach succeed
+					cpu->extra_cyc++;
 				}
 				cpu->pc++;
 			break;
 			case BEQ_REL:
+				offset = (int8_t)rb(cpu->pc);
 				if(cpu->f.z){
-					cpu->pc+=(int8_t)rb(cpu->pc);
+					// check if the branch corsses page
+					if((cpu->pc & 0xff00) != ((cpu->pc + offset) & 0xff00))
+						cpu->extra_cyc++;
+					cpu->pc+=offset;
+					// add extra cycle because the brach succeed
+					cpu->extra_cyc++;
 				}
 				cpu->pc++;
 			break;
@@ -196,14 +255,26 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				cpu->pc++;
 			break;
 			case BNE_REL:
+				offset = (int8_t)rb(cpu->pc);
 				if(!cpu->f.z){
-					cpu->pc+=(int8_t)rb(cpu->pc);
+					// check if the branch corsses page
+					if((cpu->pc & 0xff00) != ((cpu->pc + offset) & 0xff00))
+						cpu->extra_cyc++;
+					cpu->pc+=offset;
+					// add extra cycle because the brach succeed
+					cpu->extra_cyc++;
 				}
 				cpu->pc++;
 			break;
 			case BPL_REL:
+				offset = (int8_t)rb(cpu->pc);
 				if(!cpu->f.n){
-					cpu->pc+=(int8_t)rb(cpu->pc);
+					// check if the branch corsses page
+					if((cpu->pc & 0xff00) != ((cpu->pc + offset) & 0xff00))
+						cpu->extra_cyc++;
+					cpu->pc+=offset;
+					// add extra cycle because the brach succeed
+					cpu->extra_cyc++;
 				}
 				cpu->pc++;
 			break;
@@ -211,14 +282,26 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flag(cpu,BF,1);
 			break;
 			case BVC_REL:
+				offset = (int8_t)rb(cpu->pc);
 				if(!cpu->f.v){
-					cpu->pc+=(int8_t)rb(cpu->pc);
+					// check if the branch corsses page
+					if((cpu->pc & 0xff00) != ((cpu->pc + offset) & 0xff00))
+						cpu->extra_cyc++;
+					cpu->pc+=offset;
+					// add extra cycle because the brach succeed
+					cpu->extra_cyc++;
 				}
 				cpu->pc++;
 			break;
 			case BVS_REL:
+				offset = (int8_t)rb(cpu->pc);
 				if(cpu->f.v){
-					cpu->pc+=(int8_t)rb(cpu->pc);
+					// check if the branch corsses page
+					if((cpu->pc & 0xff00) != ((cpu->pc + offset) & 0xff00))
+						cpu->extra_cyc++;
+					cpu->pc+=offset;
+					// add extra cycle because the brach succeed
+					cpu->extra_cyc++;
 				}
 				cpu->pc++;
 			break;
@@ -242,11 +325,15 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			case CMP_ABX:
 				tv = rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x));
 				cmp(cpu,tv,cpu->a);
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case CMP_ABY:
 				tv = rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->y));
 				cmp(cpu,tv,cpu->a);
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->y) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case CMP_IMM:
@@ -256,6 +343,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				cmp(cpu,rb(mem_inx_ind(rb(cpu->pc++),cpu->x)),cpu->a);
 			break;
 			case CMP_INY:
+				taa = mem_ind_inx(rb(cpu->pc),0);
+				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				cmp(cpu,rb(mem_ind_inx(rb(cpu->pc++),cpu->y)),cpu->a);
 			break;
 			case CMP_ZP:
@@ -298,6 +387,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				tv = rb(ta);
 				set_flags(cpu,--tv);
 				wb(ta,tv);
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case DEC_ZP:
@@ -325,11 +416,15 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case EOR_ABX:
 				cpu->a ^= rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->a);
 			break;
 			case EOR_ABY:
 				cpu->a ^= rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->y));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->y) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->a);
 			break;
@@ -342,6 +437,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flags(cpu,cpu->a);
 			break;
 			case EOR_INY:
+				taa = mem_ind_inx(rb(cpu->pc),0);
+				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				cpu->a ^= rb(mem_ind_inx(rb(cpu->pc++),cpu->y));
 				set_flags(cpu,cpu->a);
 			break;
@@ -365,6 +462,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				tv = rb(ta);
 				set_flags(cpu,++tv);
 				wb(ta,tv);
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case INC_ZP:
@@ -383,6 +482,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flags(cpu,++cpu->x);
 			break;
 			case INY:
+				taa = mem_ind_inx(rb(cpu->pc),0);
+				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				set_flags(cpu,++cpu->y);
 			break;
 			case JMP_AB:
@@ -409,11 +510,15 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case LDA_ABX:
 				cpu->a = rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->a);
 			break;
 			case LDA_ABY:
 				cpu->a = rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->y));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->y) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->a);
 			break;
@@ -426,6 +531,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flags(cpu,cpu->a);
 			break;
 			case LDA_INY:
+				taa = mem_ind_inx(rb(cpu->pc),0);
+				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				cpu->a = rb(mem_ind_inx(rb(cpu->pc++),cpu->y));
 				set_flags(cpu,cpu->a);
 			break;
@@ -444,6 +551,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case LDX_ABY:
 				cpu->x = rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->y));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->y) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->x);
 			break;
@@ -466,6 +575,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case LDY_ABX:
 				cpu->y = rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->y);
 			break;
@@ -497,6 +608,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				tv = (tv>>1) & 0x7f;
 				set_flags(cpu,tv);
 				wb(ta,tv);
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case LSR_ACC:
@@ -538,11 +651,15 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case ORA_ABX:
 				cpu->a |= rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->a);
 			break;
 			case ORA_ABY:
 				cpu->a |= rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->y));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->y) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 				set_flags(cpu,cpu->a);
 			break;
@@ -551,6 +668,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flags(cpu,cpu->a);
 			break;
 			case ORA_INY:
+				taa = mem_ind_inx(rb(cpu->pc),0);
+				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				cpu->a |= rb(mem_ind_inx(rb(cpu->pc++),cpu->y));
 				set_flags(cpu,cpu->a);
 			break;
@@ -582,6 +701,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				wb(ta,((tv<<1) & 0xfe) | cpu->f.c);
 				set_flag(cpu,CF,tv&0x80);
 				set_flags(cpu,rb(ta));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case ROL_ACC:
@@ -618,6 +739,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				wb(ta,((tv>>1) & 0x7f) | cpu->f.c << 7);
 				set_flag(cpu,CF,tv&0x01);
 				set_flags(cpu,rb(ta));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case ROR_ACC:
@@ -664,16 +787,22 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case SBC_ABX:
 				sub(cpu,rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x)));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case SBC_ABY:
 				sub(cpu,rb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->y)));
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->y) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case SBC_INX:
 				sub(cpu,rb(mem_inx_ind(rb(cpu->pc++),cpu->x)));
 			break;
 			case SBC_INY:
+				taa = mem_ind_inx(rb(cpu->pc),0);
+				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				sub(cpu,rb(mem_ind_inx(rb(cpu->pc++),cpu->y)));
 			break;
 			case SEC:
@@ -691,16 +820,22 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case STA_ABX:
 				wb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x),cpu->a);
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case STA_ABY:
 				wb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->y),cpu->a);
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->y) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case STA_INX:
 				wb(mem_inx_ind(rb(cpu->pc++),cpu->x),cpu->a);
 			break;
 			case STA_INY:
+				taa = mem_ind_inx(rb(cpu->pc),0);
+				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				wb(mem_ind_inx(rb(cpu->pc++),cpu->y),cpu->a);
 			break;
 			case STA_ZP:
@@ -758,10 +893,11 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				
 		}
 	// run cpu until the requested cycles..
-	cycles-=ticktable[op];
+	cycles-=ticktable[op]+cpu->extra_cyc+cpu->nmi_cyc;
 	// todo: tick the ppu 3x times as the value in ticktable[op]
 	int i = 0;
-	for(i=0;i<ticktable[op]*3;i++)
+	for(i=0;i<(ticktable[op]+cpu->extra_cyc+cpu->nmi_cyc)*3;i++)
 		ppu_tick();
 	}
+	cpu->nmi_cyc = 0;
 }

@@ -1,8 +1,10 @@
 #include "hal.h"
 #include "ppu.h"
+#include "debug.h"
 #include <stdbool.h>
 #include <SDL2/SDL.h>
-
+extern cpu_t cpu;
+extern ppu_t ppu;
 // bytes per pixel
 #define BPP 4
 // this will hold the surface that contains the pixel.. (CPU)
@@ -26,6 +28,11 @@ void parse_events(){
 	SDL_PollEvent(&evt);
 	if(evt.type == SDL_QUIT)
 		emu_running = false;
+	if(evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_d){
+		print_debug(&cpu,cpu.op);
+		debug_ppu(&ppu);
+	
+	}
 }
 
 void wait_for_frame(){

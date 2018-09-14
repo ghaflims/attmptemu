@@ -24,12 +24,12 @@ void print_debug(cpu_t* cpu,uint8_t op){
 }
 
 void mem_dump(const void* mem,size_t len){
-	const int COL_SIZE = 16;
+	const int COL_SIZE = 8;
 	size_t i;
 	for(i=0; i< len + ((len % COL_SIZE) ? (COL_SIZE - len % COL_SIZE) : 0); ++i){
 		//the offset
 		if(i % COL_SIZE == 0){
-			printf("0x%04x: ",i);
+			printf("0x%04lx: ",i);
 		}
 		//the data
 		if(i < len){
@@ -45,4 +45,11 @@ void mem_dump(const void* mem,size_t len){
 
 void ppu_dump(int x, int y, uint16_t nt, uint16_t lv){
 	printf("y:%03d\tx:%03d\tnt:0x%04x\tlv:0x%04x\n",y,x,nt,lv);
+}
+
+void debug_ppu(ppu_t* ppu){
+	printf("***********************************************\n");
+	printf("PPUCTRL:  [0x%02X]\t",ppu->PPUCTRL);
+	printf("PPUMASK:  [0x%02X]\n",ppu->PPUMASK);
+	printf("***********************************************\n");
 }

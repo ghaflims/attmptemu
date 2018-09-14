@@ -25,6 +25,7 @@ static inline void set_flag(cpu_t* cpu, uint8_t f, uint16_t set){
 }
 
 static inline uint16_t mem_abs(uint8_t l, uint8_t h , uint8_t off){
+	//cpu->extra_cyc+=(((l | (h<<8)) & 0xff00) !=  ((uint16_t)off + (l | (h<<8)))) ? 1:0;
 	return (uint16_t)off + (l | (h<<8));
 }
 

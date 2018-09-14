@@ -330,12 +330,13 @@ static inline void render_pixel(){
 					}else{ // in front bg
 						putp(fg,x,scanline,ppu_rb(0x3f10 + ((sprite_attribs[i]&3)<<2) + sprite_pat));
 					}
-					if(!ppu_sprite0_hit_occured && i==0 && s0_on_cur_scanline && sprite_x[i]!=255 && (pdata&3) && ppu_is_show_bg() && (sprite_x[i] >= (ppu_is_sprite_showed_in_leftmost_8px() ? 0 : 8)) && (x >= (ppu_is_bg_showed_in_leftmost_8px() ? 0 : 8))){
+					if(!ppu_sprite0_hit_occured && i==0 && s0_on_cur_scanline && sprite_x[i]!=255 && (pdata&3) && ppu_is_show_bg() && (sprite_x[i] >= (ppu_is_sprite_showed_in_leftmost_8px() ? 0 : 8)) && (x >= (ppu_is_bg_showed_in_leftmost_8px() ? 0 : 8)) && x<255){
 						ppu_set_sprite0_hit(true);
 						cpu_cyc_b = cpu.cyc;
 						cpu_cyc_e = 0;
 						ppu_sprite0_hit_occured = true;
 						printf("Sprit Hit0 occured on: SL:%d,PPU CYC:%d\n",scanline,cycle);
+						printf("sprite_x[i]: %d\t x:%d\t ppu_is_sprite_showed_in_leftmost_8px:%d\t ppu_is_bg_showed_in_leftmost_8px:%d\t y:%d \n",sprite_x[i],x,ppu_is_sprite_showed_in_leftmost_8px(),ppu_is_bg_showed_in_leftmost_8px(),y);
 					}
 				}
 			}
@@ -354,7 +355,8 @@ static inline void fetch_pixel(){
 					break;
 				case 3: // fetch attribute byte
 					cx = (lv & 0x1f);
-					cy = (lv & 0x3e) >> 5;
+					//cy = (lv & 0x3e) >> 5; BUGGGG
+					cy = (lv >> 5)& 0x3e;
 					aa = 0x23c0 | (lv & 0x0c00) | ((cy & 0xfffc) << 1) | (cx >> 2);
 					shift = (cx & 0x2) | ((cy&0x2)<<1);
 					t_at = ((ppu_rb(aa)>>shift)&0x3)<<2;
@@ -630,6 +632,7 @@ void ppu_tick(void){
     if(VBLANK_START){
 		ppu_set_vblank(true);
 		cpu_trigger_nmi(&cpu);
+		//printf("VBLANK started..\n");
     }
 
     // end vblank logic
@@ -644,7 +647,7 @@ void ppu_tick(void){
 		ppu_set_vblank(false);
 		emu_update_screen();
 		cpu_cyc_frame = cpu_cyc_e - cpu_cyc_b;
-		printf("frame#:%lld, CPU cyc:%d, SL:%d, PPU cyc:%d\n",frame_count,cpu_cyc_frame,scanline,cycle);
+		//printf("frame#:%lld, CPU cyc:%d, SL:%d, PPU cyc:%d\n",frame_count,cpu_cyc_frame,scanline,cycle);
 	}
 	
 	
