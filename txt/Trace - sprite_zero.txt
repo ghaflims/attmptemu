@@ -1,0 +1,197 @@
+8507 $B1 $04     LDA ($04),Y @ $0700 = $60             A:CA X:1F Y:00 P:06 SP:FB CYC:232 SL:12 
+8509 $C8         INY                                   A:60 X:1F Y:00 P:04 SP:FB CYC:247 SL:12 
+850A $C9 $40     CMP #$40                              A:60 X:1F Y:01 P:04 SP:FB CYC:253 SL:12 
+850C $B0 $12     BCS $8520 = $AA                       A:60 X:1F Y:01 P:05 SP:FB CYC:259 SL:12 
+8520 $AA         TAX                                   A:60 X:1F Y:01 P:05 SP:FB CYC:268 SL:12 
+8521 $A5 $16     LDA $16 = $88                         A:60 X:60 Y:01 P:05 SP:FB CYC:274 SL:12 
+8523 $E0 $80     CPX #$80                              A:88 X:60 Y:01 P:85 SP:FB CYC:283 SL:12 
+8525 $90 $08     BCC $852F = $29                       A:88 X:60 Y:01 P:84 SP:FB CYC:289 SL:12 
+852F $29 $FB     AND #$FB                              A:88 X:60 Y:01 P:84 SP:FB CYC:298 SL:12 
+8531 $8D $00 $20 STA $2000 = $00                       A:88 X:60 Y:01 P:84 SP:FB CYC:304 SL:12 
+8534 $8A         TXA                                   A:88 X:60 Y:01 P:84 SP:FB CYC:316 SL:12 
+8535 $29 $3F     AND #$3F                              A:60 X:60 Y:01 P:04 SP:FB CYC:322 SL:12 
+8537 $8D $06 $20 STA $2006 = $00                       A:20 X:60 Y:01 P:04 SP:FB CYC:328 SL:12 
+853A $B1 $04     LDA ($04),Y @ $0701 = $80             A:20 X:60 Y:01 P:04 SP:FB CYC:340 SL:12 
+853C $C8         INY                                   A:80 X:60 Y:01 P:84 SP:FB CYC:14  SL:13 
+853D $8D $06 $20 STA $2006 = $00                       A:80 X:60 Y:02 P:04 SP:FB CYC:20  SL:13 
+8540 $B1 $04     LDA ($04),Y @ $0702 = $04             A:80 X:60 Y:02 P:04 SP:FB CYC:32  SL:13 
+8542 $C8         INY                                   A:04 X:60 Y:02 P:04 SP:FB CYC:47  SL:13 
+8543 $AA         TAX                                   A:04 X:60 Y:03 P:04 SP:FB CYC:53  SL:13 
+8544 $B1 $04     LDA ($04),Y @ $0703 = $00             A:04 X:04 Y:03 P:04 SP:FB CYC:59  SL:13 
+8546 $C8         INY                                   A:00 X:04 Y:03 P:06 SP:FB CYC:74  SL:13 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:04 Y:04 P:04 SP:FB CYC:80  SL:13 
+854A $CA         DEX                                   A:00 X:04 Y:04 P:04 SP:FB CYC:92  SL:13 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:03 Y:04 P:04 SP:FB CYC:98  SL:13 
+8544 $B1 $04     LDA ($04),Y @ $0704 = $00             A:00 X:03 Y:04 P:04 SP:FB CYC:107 SL:13 
+8546 $C8         INY                                   A:00 X:03 Y:04 P:06 SP:FB CYC:122 SL:13 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:03 Y:05 P:04 SP:FB CYC:128 SL:13 
+854A $CA         DEX                                   A:00 X:03 Y:05 P:04 SP:FB CYC:140 SL:13 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:02 Y:05 P:04 SP:FB CYC:146 SL:13 
+8544 $B1 $04     LDA ($04),Y @ $0705 = $00             A:00 X:02 Y:05 P:04 SP:FB CYC:155 SL:13 
+8546 $C8         INY                                   A:00 X:02 Y:05 P:06 SP:FB CYC:170 SL:13 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:02 Y:06 P:04 SP:FB CYC:176 SL:13 
+854A $CA         DEX                                   A:00 X:02 Y:06 P:04 SP:FB CYC:188 SL:13 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:01 Y:06 P:04 SP:FB CYC:194 SL:13 
+8544 $B1 $04     LDA ($04),Y @ $0706 = $00             A:00 X:01 Y:06 P:04 SP:FB CYC:203 SL:13 
+8546 $C8         INY                                   A:00 X:01 Y:06 P:06 SP:FB CYC:218 SL:13 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:01 Y:07 P:04 SP:FB CYC:224 SL:13 
+854A $CA         DEX                                   A:00 X:01 Y:07 P:04 SP:FB CYC:236 SL:13 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:00 Y:07 P:06 SP:FB CYC:242 SL:13 
+854D $A5 $16     LDA $16 = $88                         A:00 X:00 Y:07 P:06 SP:FB CYC:248 SL:13 
+854F $8D $00 $20 STA $2000 = $00                       A:88 X:00 Y:07 P:84 SP:FB CYC:257 SL:13 
+8552 $4C $07 $85 JMP $8507 = $B1                       A:88 X:00 Y:07 P:84 SP:FB CYC:269 SL:13 
+8507 $B1 $04     LDA ($04),Y @ $0707 = $60             A:88 X:00 Y:07 P:84 SP:FB CYC:278 SL:13 
+8509 $C8         INY                                   A:60 X:00 Y:07 P:04 SP:FB CYC:293 SL:13 
+850A $C9 $40     CMP #$40                              A:60 X:00 Y:08 P:04 SP:FB CYC:299 SL:13 
+850C $B0 $12     BCS $8520 = $AA                       A:60 X:00 Y:08 P:05 SP:FB CYC:305 SL:13 
+8520 $AA         TAX                                   A:60 X:00 Y:08 P:05 SP:FB CYC:314 SL:13 
+8521 $A5 $16     LDA $16 = $88                         A:60 X:60 Y:08 P:05 SP:FB CYC:320 SL:13 
+8523 $E0 $80     CPX #$80                              A:88 X:60 Y:08 P:85 SP:FB CYC:329 SL:13 
+8525 $90 $08     BCC $852F = $29                       A:88 X:60 Y:08 P:84 SP:FB CYC:335 SL:13 
+852F $29 $FB     AND #$FB                              A:88 X:60 Y:08 P:84 SP:FB CYC:3   SL:14 
+8531 $8D $00 $20 STA $2000 = $00                       A:88 X:60 Y:08 P:84 SP:FB CYC:9   SL:14 
+8534 $8A         TXA                                   A:88 X:60 Y:08 P:84 SP:FB CYC:21  SL:14 
+8535 $29 $3F     AND #$3F                              A:60 X:60 Y:08 P:04 SP:FB CYC:27  SL:14 
+8537 $8D $06 $20 STA $2006 = $00                       A:20 X:60 Y:08 P:04 SP:FB CYC:33  SL:14 
+853A $B1 $04     LDA ($04),Y @ $0708 = $A0             A:20 X:60 Y:08 P:04 SP:FB CYC:45  SL:14 
+853C $C8         INY                                   A:A0 X:60 Y:08 P:84 SP:FB CYC:60  SL:14 
+853D $8D $06 $20 STA $2006 = $00                       A:A0 X:60 Y:09 P:04 SP:FB CYC:66  SL:14 
+8540 $B1 $04     LDA ($04),Y @ $0709 = $04             A:A0 X:60 Y:09 P:04 SP:FB CYC:78  SL:14 
+8542 $C8         INY                                   A:04 X:60 Y:09 P:04 SP:FB CYC:93  SL:14 
+8543 $AA         TAX                                   A:04 X:60 Y:0A P:04 SP:FB CYC:99  SL:14 
+8544 $B1 $04     LDA ($04),Y @ $070A = $00             A:04 X:04 Y:0A P:04 SP:FB CYC:105 SL:14 
+8546 $C8         INY                                   A:00 X:04 Y:0A P:06 SP:FB CYC:120 SL:14 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:04 Y:0B P:04 SP:FB CYC:126 SL:14 
+854A $CA         DEX                                   A:00 X:04 Y:0B P:04 SP:FB CYC:138 SL:14 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:03 Y:0B P:04 SP:FB CYC:144 SL:14 
+8544 $B1 $04     LDA ($04),Y @ $070B = $00             A:00 X:03 Y:0B P:04 SP:FB CYC:153 SL:14 
+8546 $C8         INY                                   A:00 X:03 Y:0B P:06 SP:FB CYC:168 SL:14 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:03 Y:0C P:04 SP:FB CYC:174 SL:14 
+854A $CA         DEX                                   A:00 X:03 Y:0C P:04 SP:FB CYC:186 SL:14 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:02 Y:0C P:04 SP:FB CYC:192 SL:14 
+8544 $B1 $04     LDA ($04),Y @ $070C = $00             A:00 X:02 Y:0C P:04 SP:FB CYC:201 SL:14 
+8546 $C8         INY                                   A:00 X:02 Y:0C P:06 SP:FB CYC:216 SL:14 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:02 Y:0D P:04 SP:FB CYC:222 SL:14 
+854A $CA         DEX                                   A:00 X:02 Y:0D P:04 SP:FB CYC:234 SL:14 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:01 Y:0D P:04 SP:FB CYC:240 SL:14 
+8544 $B1 $04     LDA ($04),Y @ $070D = $00             A:00 X:01 Y:0D P:04 SP:FB CYC:249 SL:14 
+8546 $C8         INY                                   A:00 X:01 Y:0D P:06 SP:FB CYC:264 SL:14 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:01 Y:0E P:04 SP:FB CYC:270 SL:14 
+854A $CA         DEX                                   A:00 X:01 Y:0E P:04 SP:FB CYC:282 SL:14 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:00 Y:0E P:06 SP:FB CYC:288 SL:14 
+854D $A5 $16     LDA $16 = $88                         A:00 X:00 Y:0E P:06 SP:FB CYC:294 SL:14 
+854F $8D $00 $20 STA $2000 = $00                       A:88 X:00 Y:0E P:84 SP:FB CYC:303 SL:14 
+8552 $4C $07 $85 JMP $8507 = $B1                       A:88 X:00 Y:0E P:84 SP:FB CYC:315 SL:14 
+8507 $B1 $04     LDA ($04),Y @ $070E = $60             A:88 X:00 Y:0E P:84 SP:FB CYC:324 SL:14 
+8509 $C8         INY                                   A:60 X:00 Y:0E P:04 SP:FB CYC:339 SL:14 
+850A $C9 $40     CMP #$40                              A:60 X:00 Y:0F P:04 SP:FB CYC:4   SL:15 
+850C $B0 $12     BCS $8520 = $AA                       A:60 X:00 Y:0F P:05 SP:FB CYC:10  SL:15 
+8520 $AA         TAX                                   A:60 X:00 Y:0F P:05 SP:FB CYC:19  SL:15 
+8521 $A5 $16     LDA $16 = $88                         A:60 X:60 Y:0F P:05 SP:FB CYC:25  SL:15 
+8523 $E0 $80     CPX #$80                              A:88 X:60 Y:0F P:85 SP:FB CYC:34  SL:15 
+8525 $90 $08     BCC $852F = $29                       A:88 X:60 Y:0F P:84 SP:FB CYC:40  SL:15 
+852F $29 $FB     AND #$FB                              A:88 X:60 Y:0F P:84 SP:FB CYC:49  SL:15 
+8531 $8D $00 $20 STA $2000 = $00                       A:88 X:60 Y:0F P:84 SP:FB CYC:55  SL:15 
+8534 $8A         TXA                                   A:88 X:60 Y:0F P:84 SP:FB CYC:67  SL:15 
+8535 $29 $3F     AND #$3F                              A:60 X:60 Y:0F P:04 SP:FB CYC:73  SL:15 
+8537 $8D $06 $20 STA $2006 = $00                       A:20 X:60 Y:0F P:04 SP:FB CYC:79  SL:15 
+853A $B1 $04     LDA ($04),Y @ $070F = $C0             A:20 X:60 Y:0F P:04 SP:FB CYC:91  SL:15 
+853C $C8         INY                                   A:C0 X:60 Y:0F P:84 SP:FB CYC:106 SL:15 
+853D $8D $06 $20 STA $2006 = $00                       A:C0 X:60 Y:10 P:04 SP:FB CYC:112 SL:15 
+8540 $B1 $04     LDA ($04),Y @ $0710 = $04             A:C0 X:60 Y:10 P:04 SP:FB CYC:124 SL:15 
+8542 $C8         INY                                   A:04 X:60 Y:10 P:04 SP:FB CYC:139 SL:15 
+8543 $AA         TAX                                   A:04 X:60 Y:11 P:04 SP:FB CYC:145 SL:15 
+8544 $B1 $04     LDA ($04),Y @ $0711 = $00             A:04 X:04 Y:11 P:04 SP:FB CYC:151 SL:15 
+8546 $C8         INY                                   A:00 X:04 Y:11 P:06 SP:FB CYC:166 SL:15 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:04 Y:12 P:04 SP:FB CYC:172 SL:15 
+854A $CA         DEX                                   A:00 X:04 Y:12 P:04 SP:FB CYC:184 SL:15 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:03 Y:12 P:04 SP:FB CYC:190 SL:15 
+8544 $B1 $04     LDA ($04),Y @ $0712 = $00             A:00 X:03 Y:12 P:04 SP:FB CYC:199 SL:15 
+8546 $C8         INY                                   A:00 X:03 Y:12 P:06 SP:FB CYC:214 SL:15 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:03 Y:13 P:04 SP:FB CYC:220 SL:15 
+854A $CA         DEX                                   A:00 X:03 Y:13 P:04 SP:FB CYC:232 SL:15 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:02 Y:13 P:04 SP:FB CYC:238 SL:15 
+8544 $B1 $04     LDA ($04),Y @ $0713 = $00             A:00 X:02 Y:13 P:04 SP:FB CYC:247 SL:15 
+8546 $C8         INY                                   A:00 X:02 Y:13 P:06 SP:FB CYC:262 SL:15 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:02 Y:14 P:04 SP:FB CYC:268 SL:15 
+854A $CA         DEX                                   A:00 X:02 Y:14 P:04 SP:FB CYC:280 SL:15 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:01 Y:14 P:04 SP:FB CYC:286 SL:15 
+8544 $B1 $04     LDA ($04),Y @ $0714 = $00             A:00 X:01 Y:14 P:04 SP:FB CYC:295 SL:15 
+8546 $C8         INY                                   A:00 X:01 Y:14 P:06 SP:FB CYC:310 SL:15 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:01 Y:15 P:04 SP:FB CYC:316 SL:15 
+854A $CA         DEX                                   A:00 X:01 Y:15 P:04 SP:FB CYC:328 SL:15 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:00 Y:15 P:06 SP:FB CYC:334 SL:15 
+854D $A5 $16     LDA $16 = $88                         A:00 X:00 Y:15 P:06 SP:FB CYC:340 SL:15 
+854F $8D $00 $20 STA $2000 = $00                       A:88 X:00 Y:15 P:84 SP:FB CYC:8   SL:16 
+8552 $4C $07 $85 JMP $8507 = $B1                       A:88 X:00 Y:15 P:84 SP:FB CYC:20  SL:16 
+8507 $B1 $04     LDA ($04),Y @ $0715 = $60             A:88 X:00 Y:15 P:84 SP:FB CYC:29  SL:16 
+8509 $C8         INY                                   A:60 X:00 Y:15 P:04 SP:FB CYC:44  SL:16 
+850A $C9 $40     CMP #$40                              A:60 X:00 Y:16 P:04 SP:FB CYC:50  SL:16 
+850C $B0 $12     BCS $8520 = $AA                       A:60 X:00 Y:16 P:05 SP:FB CYC:56  SL:16 
+8520 $AA         TAX                                   A:60 X:00 Y:16 P:05 SP:FB CYC:65  SL:16 
+8521 $A5 $16     LDA $16 = $88                         A:60 X:60 Y:16 P:05 SP:FB CYC:71  SL:16 
+8523 $E0 $80     CPX #$80                              A:88 X:60 Y:16 P:85 SP:FB CYC:80  SL:16 
+8525 $90 $08     BCC $852F = $29                       A:88 X:60 Y:16 P:84 SP:FB CYC:86  SL:16 
+852F $29 $FB     AND #$FB                              A:88 X:60 Y:16 P:84 SP:FB CYC:95  SL:16 
+8531 $8D $00 $20 STA $2000 = $00                       A:88 X:60 Y:16 P:84 SP:FB CYC:101 SL:16 
+8534 $8A         TXA                                   A:88 X:60 Y:16 P:84 SP:FB CYC:113 SL:16 
+8535 $29 $3F     AND #$3F                              A:60 X:60 Y:16 P:04 SP:FB CYC:119 SL:16 
+8537 $8D $06 $20 STA $2006 = $00                       A:20 X:60 Y:16 P:04 SP:FB CYC:125 SL:16 
+853A $B1 $04     LDA ($04),Y @ $0716 = $E0             A:20 X:60 Y:16 P:04 SP:FB CYC:137 SL:16 
+853C $C8         INY                                   A:E0 X:60 Y:16 P:84 SP:FB CYC:152 SL:16 
+853D $8D $06 $20 STA $2006 = $00                       A:E0 X:60 Y:17 P:04 SP:FB CYC:158 SL:16 
+8540 $B1 $04     LDA ($04),Y @ $0717 = $04             A:E0 X:60 Y:17 P:04 SP:FB CYC:170 SL:16 
+8542 $C8         INY                                   A:04 X:60 Y:17 P:04 SP:FB CYC:185 SL:16 
+8543 $AA         TAX                                   A:04 X:60 Y:18 P:04 SP:FB CYC:191 SL:16 
+8544 $B1 $04     LDA ($04),Y @ $0718 = $00             A:04 X:04 Y:18 P:04 SP:FB CYC:197 SL:16 
+8546 $C8         INY                                   A:00 X:04 Y:18 P:06 SP:FB CYC:212 SL:16 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:04 Y:19 P:04 SP:FB CYC:218 SL:16 
+854A $CA         DEX                                   A:00 X:04 Y:19 P:04 SP:FB CYC:230 SL:16 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:03 Y:19 P:04 SP:FB CYC:236 SL:16 
+8544 $B1 $04     LDA ($04),Y @ $0719 = $00             A:00 X:03 Y:19 P:04 SP:FB CYC:245 SL:16 
+8546 $C8         INY                                   A:00 X:03 Y:19 P:06 SP:FB CYC:260 SL:16 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:03 Y:1A P:04 SP:FB CYC:266 SL:16 
+854A $CA         DEX                                   A:00 X:03 Y:1A P:04 SP:FB CYC:278 SL:16 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:02 Y:1A P:04 SP:FB CYC:284 SL:16 
+8544 $B1 $04     LDA ($04),Y @ $071A = $00             A:00 X:02 Y:1A P:04 SP:FB CYC:293 SL:16 
+8546 $C8         INY                                   A:00 X:02 Y:1A P:06 SP:FB CYC:308 SL:16 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:02 Y:1B P:04 SP:FB CYC:314 SL:16 
+854A $CA         DEX                                   A:00 X:02 Y:1B P:04 SP:FB CYC:326 SL:16 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:01 Y:1B P:04 SP:FB CYC:332 SL:16 
+8544 $B1 $04     LDA ($04),Y @ $071B = $00             A:00 X:01 Y:1B P:04 SP:FB CYC:0   SL:17 
+8546 $C8         INY                                   A:00 X:01 Y:1B P:06 SP:FB CYC:15  SL:17 
+8547 $8D $07 $20 STA $2007 = $00                       A:00 X:01 Y:1C P:04 SP:FB CYC:21  SL:17 
+854A $CA         DEX                                   A:00 X:01 Y:1C P:04 SP:FB CYC:33  SL:17 
+854B $D0 $F7     BNE $8544 = $B1                       A:00 X:00 Y:1C P:06 SP:FB CYC:39  SL:17 
+854D $A5 $16     LDA $16 = $88                         A:00 X:00 Y:1C P:06 SP:FB CYC:45  SL:17 
+854F $8D $00 $20 STA $2000 = $00                       A:88 X:00 Y:1C P:84 SP:FB CYC:54  SL:17 
+8552 $4C $07 $85 JMP $8507 = $B1                       A:88 X:00 Y:1C P:84 SP:FB CYC:66  SL:17 
+8507 $B1 $04     LDA ($04),Y @ $071C = $23             A:88 X:00 Y:1C P:84 SP:FB CYC:75  SL:17 
+8509 $C8         INY                                   A:23 X:00 Y:1C P:04 SP:FB CYC:90  SL:17 
+850A $C9 $40     CMP #$40                              A:23 X:00 Y:1D P:04 SP:FB CYC:96  SL:17 
+850C $B0 $12     BCS $8520 = $AA                       A:23 X:00 Y:1D P:84 SP:FB CYC:102 SL:17 
+850E $8D $06 $20 STA $2006 = $00                       A:23 X:00 Y:1D P:84 SP:FB CYC:108 SL:17 
+8511 $B1 $04     LDA ($04),Y @ $071D = $C8             A:23 X:00 Y:1D P:84 SP:FB CYC:120 SL:17 
+8513 $C8         INY                                   A:C8 X:00 Y:1D P:84 SP:FB CYC:135 SL:17 
+8514 $8D $06 $20 STA $2006 = $00                       A:C8 X:00 Y:1E P:04 SP:FB CYC:141 SL:17 
+8517 $B1 $04     LDA ($04),Y @ $071E = $00             A:C8 X:00 Y:1E P:04 SP:FB CYC:153 SL:17 
+8519 $C8         INY                                   A:00 X:00 Y:1E P:06 SP:FB CYC:168 SL:17 
+851A $8D $07 $20 STA $2007 = $00                       A:00 X:00 Y:1F P:04 SP:FB CYC:174 SL:17 
+851D $4C $07 $85 JMP $8507 = $B1                       A:00 X:00 Y:1F P:04 SP:FB CYC:186 SL:17 
+8507 $B1 $04     LDA ($04),Y @ $071F = $FF             A:00 X:00 Y:1F P:04 SP:FB CYC:195 SL:17 
+8509 $C8         INY                                   A:FF X:00 Y:1F P:84 SP:FB CYC:210 SL:17 
+850A $C9 $40     CMP #$40                              A:FF X:00 Y:20 P:04 SP:FB CYC:216 SL:17 
+850C $B0 $12     BCS $8520 = $AA                       A:FF X:00 Y:20 P:85 SP:FB CYC:222 SL:17 
+8520 $AA         TAX                                   A:FF X:00 Y:20 P:85 SP:FB CYC:231 SL:17 
+8521 $A5 $16     LDA $16 = $88                         A:FF X:FF Y:20 P:85 SP:FB CYC:237 SL:17 
+8523 $E0 $80     CPX #$80                              A:88 X:FF Y:20 P:85 SP:FB CYC:246 SL:17 
+8525 $90 $08     BCC $852F = $29                       A:88 X:FF Y:20 P:05 SP:FB CYC:252 SL:17 
+8527 $E0 $FF     CPX #$FF                              A:88 X:FF Y:20 P:05 SP:FB CYC:258 SL:17 
+8529 $F0 $2A     BEQ $8555 = $60                       A:88 X:FF Y:20 P:07 SP:FB CYC:264 SL:17 
+8555 $60         RTS                                   A:88 X:FF Y:20 P:07 SP:FB CYC:273 SL:17 
+9114 $A9 $CB     LDA #$CB                              A:88 X:FF Y:20 P:07 SP:FD CYC:291 SL:17 
+9116 $8D $EC $04 STA $04EC = $CA                       A:CB X:FF Y:20 P:85 SP:FD CYC:297 SL:17 
+9119 $A5 $46     LDA $46 = $00                         A:CB X:FF Y:20 P:85 SP:FD CYC:309 SL:17 
+911B $C9 $E0     CMP #$E0                              A:00 X:FF Y:20 P:07 SP:FD CYC:318 SL:17 
+911D $F0 $08     BEQ $9127 = $A5                       A:00 X:FF Y:20 P:04 SP:FD CYC:324 SL:17 
+911F $A9 $20     LDA #$20                              A:00 X:FF Y:20 P:04 SP:FD CYC:330 SL:17 

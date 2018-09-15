@@ -82,4 +82,6 @@ void cpu_trigger_nmi(cpu_t* cpu);
 void cpu_exec(cpu_t* cpu, long cycles);
 uint8_t cpu_ram_ior(uint16_t addr);
 void cpu_ram_iow(uint16_t addr, uint8_t data);
+int debug_flag;
+int debug_count;
 #endif

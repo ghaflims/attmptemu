@@ -2,6 +2,7 @@
 #include "mmc.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "ppu.h"
 #include "cpu.h"
 #include "psg.h"
@@ -24,13 +25,21 @@ void mem_free(void){
 }
 
 uint8_t rb(uint16_t addr){
-
+	uint8_t r;
 	switch(addr >> 13){
 		case 0:
-			return cpu_ram_ior(addr&0x07ff);
+			r = cpu_ram_ior(addr&0x07ff);
+			if(debug_flag){
+				printf("R:\tAddress:%04X\tValue:%02X\n",addr,r);
+			}
+			return r;
 			break;
 		case 1:
-			return ppu_ior(addr);
+			r = ppu_ior(addr);
+			if(debug_flag){
+				printf("R:\tAddress:%04X\tValue:%02X\n",addr,r);
+			}
+			return r;
 			break;
 		case 2:
 			return psg_ior(addr);
@@ -46,7 +55,9 @@ uint8_t rb(uint16_t addr){
 //	return mem[addr];
 }
 void wb(uint16_t addr, uint8_t b){
-	
+	if(debug_flag){
+		printf("W:\tAddress:%04X\tValue:%02X\n",addr,b);
+	}
 	// DMA operation..
 	int i;
 	// TODO avoid magic numbers 0x4014 is the DMA reg

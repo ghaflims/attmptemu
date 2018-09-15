@@ -5,8 +5,9 @@
 #include "helper.h"
 #include "debug.h"
 
-int debug_flag = 0;
-uint8_t cpu_ram[0x8000] = {0};
+
+//uint8_t cpu_ram[0x8000] = {0}; is it a BUGG??
+uint8_t cpu_ram[0x800] = {0};
 static inline uint16_t nmi_vector_address(){
 	return (rb(NMI_VEC) | (rb(NMI_VEC+1)<<8)); 
 }
@@ -21,6 +22,8 @@ void cpu_init(cpu_t* cpu){
 	//*cpu = {.cyc=0,.pc=0,.x=0,.y=0,.a=0,.sp=00,.sr=0x24};
 	memset(cpu,0,sizeof(cpu_t));
 	cpu->sr = 0x24;
+	debug_flag = 0;
+	debug_count = 0;
 }
 void cpu_reset(cpu_t* cpu){
 	cpu->pc =  reset_vector_address();
@@ -50,16 +53,17 @@ inline void cpu_ram_iow(uint16_t addr, uint8_t data){
 void cpu_exec(cpu_t* cpu, long cycles){
 	while(cycles>0){
 		cpu->extra_cyc=0;
-		if(cpu->pc == 0x8d4f){
-			debug_flag = 0;
+		if(cpu->pc == 0x8898 && !debug_count){
+			debug_flag = 1;
 		}
-		if(cpu->pc == 0x8d68){
-			debug_flag = 0;
-			mem_dump(&cpu_ram[0x0325], 8);
-		}
+
 		if(debug_flag){
 			print_debug(cpu,rb(cpu->pc));
-			mem_dump(&cpu_ram[0x0020], 0x20);
+			//mem_dump(&cpu_ram[0x0020], 0x20);
+			debug_count++;
+		}
+		if(debug_count == 256*4){
+			debug_flag = 0;
 		}
 		uint8_t op = rb(cpu->pc++);
 		cpu->op = op;
@@ -178,15 +182,10 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				ta = rb(cpu->pc++);
 				//tv = rb(cpu->pc); BUGGGGGGGGG
 				tv = rb(ta);
-				if(debug_flag){
-					printf("Address: %04X , Value: %02X \n",ta,tv);
-				}
+
 				set_flag(cpu,CF,tv&0x80);
 				// is masking unneeded step?
 				tv = (tv<<1) & 0xfe;
-				if(debug_flag){
-					printf("Address: %04X , Value: %02X \n",ta,tv);
-				}
 				set_flags(cpu,tv);
 				wb(ta,tv);
 			break;
@@ -482,8 +481,6 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flags(cpu,++cpu->x);
 			break;
 			case INY:
-				taa = mem_ind_inx(rb(cpu->pc),0);
-				cpu->extra_cyc+= ((taa & 0xff00) != ((taa + cpu->y) & 0xff00)) ? 1:0;
 				set_flags(cpu,++cpu->y);
 			break;
 			case JMP_AB:
@@ -618,12 +615,13 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flags(cpu,cpu->a);
 			break;
 			case LSR_ZP:
-				tv = rb(cpu->pc);
+				ta = rb(cpu->pc++);
+				tv = rb(ta);
 				set_flag(cpu,CF,tv&0x01);
 				// is masking unneeded step?
 				tv = (tv>>1) & 0x7f;
 				set_flags(cpu,tv);
-				wb(cpu->pc++,tv);
+				wb(ta,tv);
 			break;
 			case LSR_ZPX:
 				tv = rb(ZP(cpu->pc + cpu->x));
