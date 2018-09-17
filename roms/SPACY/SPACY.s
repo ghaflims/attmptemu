@@ -745,9 +745,9 @@ _debug:
 ; for( index = 0; index < sizeof(PALETTE); ++index ){
 ;
 	sta     _index
-L03F4:	lda     _index
+L03FA:	lda     _index
 	cmp     #$20
-	bcs     L02DF
+	bcs     L02E5
 ;
 ; PPU_DATA = PALETTE[index];
 ;
@@ -758,11 +758,11 @@ L03F4:	lda     _index
 ; for( index = 0; index < sizeof(PALETTE); ++index ){
 ;
 	inc     _index
-	jmp     L03F4
+	jmp     L03FA
 ;
 ; }
 ;
-L02DF:	rts
+L02E5:	rts
 
 .endproc
 
@@ -786,22 +786,22 @@ L02DF:	rts
 ;
 	lda     _joypad1
 	and     #$02
-	beq     L03F5
+	beq     L03FB
 	lda     #$01
 	sta     _hero_ship
 ;
 ; if ((joypad1 & (RIGHT)) != 0) hero_ship.anime = ship_right;
 ;
-L03F5:	lda     _joypad1
+L03FB:	lda     _joypad1
 	and     #$01
-	beq     L03F7
+	beq     L03FD
 	lda     #$02
 	sta     _hero_ship
 ;
 ; hero_ship.dir = 0; // never flipped
 ;
 	lda     #$00
-L03F7:	sta     _hero_ship+1
+L03FD:	sta     _hero_ship+1
 ;
 ; ++DEBUG;
 ;
@@ -838,16 +838,16 @@ L03F7:	sta     _hero_ship+1
 ;
 	lda     _joypad1
 	and     #$03
-	bne     L03FC
+	bne     L0402
 ;
 ; if (X_speed > 0) // if positive, going right
 ;
 	lda     _X_speed
 	sec
 	sbc     #$01
-	bvs     L031E
+	bvs     L0324
 	eor     #$80
-L031E:	bpl     L03FB
+L0324:	bpl     L0401
 ;
 ; --X_speed;
 ;
@@ -855,9 +855,9 @@ L031E:	bpl     L03FB
 ;
 ; if (X_speed < 0) // going left
 ;
-L03FB:	lda     _X_speed
+L0401:	lda     _X_speed
 	asl     a
-	bcc     L03FC
+	bcc     L0402
 ;
 ; ++X_speed;
 ;
@@ -865,14 +865,14 @@ L03FB:	lda     _X_speed
 ;
 ; if ((joypad1 & RIGHT) > 0){
 ;
-L03FC:	lda     _joypad1
+L0402:	lda     _joypad1
 	and     #$01
-	beq     L03FD
+	beq     L0403
 ;
 ; if (X_speed >= 0){ // going right
 ;
 	ldx     _X_speed
-	bmi     L032A
+	bmi     L0330
 ;
 ; X_speed += 2;
 ;
@@ -880,30 +880,30 @@ L03FC:	lda     _joypad1
 	clc
 	adc     _X_speed
 	sta     _X_speed
-	bpl     L03FD
+	bpl     L0403
 ;
 ; else { // going left
 ;
-	jmp     L03FD
+	jmp     L0403
 ;
 ; X_speed += 4; // double friction
 ;
-L032A:	lda     #$04
+L0330:	lda     #$04
 	clc
 	adc     _X_speed
 	sta     _X_speed
 ;
 ; if ((joypad1 & LEFT) > 0){
 ;
-L03FD:	lda     _joypad1
+L0403:	lda     _joypad1
 	and     #$02
-	beq     L03FF
+	beq     L0405
 ;
 ; if (X_speed < 0){ // going left
 ;
 	lda     _X_speed
 	asl     a
-	bcc     L03FE
+	bcc     L0404
 ;
 ; X_speed -= 2;
 ;
@@ -911,32 +911,32 @@ L03FD:	lda     _joypad1
 	sec
 	sbc     #$02
 	sta     _X_speed
-	bpl     L03FF
+	bpl     L0405
 ;
 ; else { // going right
 ;
-	jmp     L03FF
+	jmp     L0405
 ;
 ; X_speed -= 4; // double friction
 ;
-L03FE:	lda     _X_speed
+L0404:	lda     _X_speed
 	sec
 	sbc     #$04
 	sta     _X_speed
 ;
 ; if (X_speed >= 0){ // going right
 ;
-L03FF:	ldx     _X_speed
-	bmi     L0342
+L0405:	ldx     _X_speed
+	bmi     L0348
 ;
 ; if (X_speed > 0x34)
 ;
 	lda     _X_speed
 	sec
 	sbc     #$35
-	bvs     L0348
+	bvs     L034E
 	eor     #$80
-L0348:	bpl     L0400
+L034E:	bpl     L0406
 ;
 ; X_speed = 0x34;
 ;
@@ -944,34 +944,34 @@ L0348:	bpl     L0400
 ;
 ; else {
 ;
-	jmp     L03FA
+	jmp     L0400
 ;
 ; if (X_speed < (-0x24))
 ;
-L0342:	lda     _X_speed
+L0348:	lda     _X_speed
 	sec
 	sbc     #$DC
-	bvc     L0350
+	bvc     L0356
 	eor     #$80
-L0350:	bpl     L0400
+L0356:	bpl     L0406
 ;
 ; X_speed = (-0x24); // 0xe0
 ;
 	lda     #$DC
-L03FA:	sta     _X_speed
+L0400:	sta     _X_speed
 ;
 ; X_old = hero_ship.X;
 ;
-L0400:	lda     _hero_ship+3
+L0406:	lda     _hero_ship+3
 	sta     _X_old
 ;
 ; hero_ship.X += X_speed>>4;
 ;
 	ldx     #$00
 	lda     _X_speed
-	bpl     L0358
+	bpl     L035E
 	dex
-L0358:	jsr     asrax4
+L035E:	jsr     asrax4
 	clc
 	adc     _hero_ship+3
 	sta     _hero_ship+3
@@ -979,7 +979,7 @@ L0358:	jsr     asrax4
 ; if (hero_ship.X > 0xf0){ // too far right or left
 ;
 	cmp     #$F1
-	bcc     L0401
+	bcc     L0407
 ;
 ; hero_ship.X = X_old;
 ;
@@ -993,13 +993,13 @@ L0358:	jsr     asrax4
 ;
 ; --Vert_scroll;
 ;
-L0401:	dec     _Vert_scroll
+L0407:	dec     _Vert_scroll
 ;
 ; if (Vert_scroll > 0xef){
 ;
 	lda     _Vert_scroll
 	cmp     #$F0
-	bcc     L0360
+	bcc     L0366
 ;
 ; Vert_scroll = 0xef; // screen is only 240 pixels high
 ;
@@ -1008,7 +1008,7 @@ L0401:	dec     _Vert_scroll
 ;
 ; }
 ;
-L0360:	rts
+L0366:	rts
 
 .endproc
 
@@ -1053,9 +1053,9 @@ L0360:	rts
 ;
 	lda     #$00
 	sta     _index
-L0402:	lda     _index
+L0408:	lda     _index
 	cmp     #$07
-	bcs     L0403
+	bcs     L0409
 ;
 ; PPU_DATA = HUD[index];
 ;
@@ -1066,11 +1066,11 @@ L0402:	lda     _index
 ; for(index=0;index < sizeof(HUD);++index){
 ;
 	inc     _index
-	jmp     L0402
+	jmp     L0408
 ;
 ; PPU_ADDRESS = 0x24;
 ;
-L0403:	lda     #$24
+L0409:	lda     #$24
 	sta     $2006
 ;
 ; PPU_ADDRESS = 0x74;
@@ -1082,9 +1082,9 @@ L0403:	lda     #$24
 ;
 	lda     #$00
 	sta     _index
-L0404:	lda     _index
+L040A:	lda     _index
 	cmp     #$07
-	bcs     L0405
+	bcs     L040B
 ;
 ; PPU_DATA = HUD2[index];
 ;
@@ -1095,11 +1095,11 @@ L0404:	lda     _index
 ; for(index=0;index < sizeof(HUD);++index){
 ;
 	inc     _index
-	jmp     L0404
+	jmp     L040A
 ;
 ; PPU_ADDRESS = 0x27;
 ;
-L0405:	lda     #$27
+L040B:	lda     #$27
 	sta     $2006
 ;
 ; PPU_ADDRESS = 0xc0;
@@ -1111,9 +1111,9 @@ L0405:	lda     #$27
 ;
 	lda     #$00
 	sta     _index
-L0406:	lda     _index
+L040C:	lda     _index
 	cmp     #$08
-	bcs     L039C
+	bcs     L03A2
 ;
 ; PPU_DATA = 0xff;
 ;
@@ -1123,11 +1123,11 @@ L0406:	lda     _index
 ; for(index=0;index < 8;++index){
 ;
 	inc     _index
-	jmp     L0406
+	jmp     L040C
 ;
 ; }
 ;
-L039C:	rts
+L03A2:	rts
 
 .endproc
 
@@ -1423,12 +1423,22 @@ L039C:	rts
 ;
 ; while (Game_Mode == TITLE_MODE){ // Title Screen
 ;
-	jmp     L040B
+	jmp     L0412
+;
+; debug = 0xca;
+;
+L040D:	lda     #$CA
+	sta     _debug
 ;
 ; while (NMI_flag == 0); // wait till v-blank
 ;
-L0407:	lda     _NMI_flag
-	beq     L0407
+L040E:	lda     _NMI_flag
+	beq     L040E
+;
+; debug = 0xcb;
+;
+	lda     #$CB
+	sta     _debug
 ;
 ; Rotate_Palette();
 ;
@@ -1446,10 +1456,10 @@ L0407:	lda     _NMI_flag
 ;
 	lda     _joypad1old
 	and     #$10
-	bne     L01B7
+	bne     L01BB
 	lda     _joypad1
 	and     #$10
-	beq     L01B7
+	beq     L01BB
 ;
 ; NMI_flag = 0;
 ;
@@ -1463,8 +1473,8 @@ L0407:	lda     _NMI_flag
 ;
 ; while (NMI_flag == 0); // wait till v-blank
 ;
-L040A:	lda     _NMI_flag
-	beq     L040A
+L0411:	lda     _NMI_flag
+	beq     L0411
 ;
 ; debug = 0xab;
 ;
@@ -1547,7 +1557,7 @@ L040A:	lda     _NMI_flag
 ;
 ; Music_Update();
 ;
-L01B7:	jsr     _Music_Update
+L01BB:	jsr     _Music_Update
 ;
 ; NMI_flag = 0;
 ;
@@ -1556,22 +1566,26 @@ L01B7:	jsr     _Music_Update
 ;
 ; while (Game_Mode == TITLE_MODE){ // Title Screen
 ;
-L040B:	lda     _Game_Mode
-	jeq     L0407
+L0412:	lda     _Game_Mode
+	jeq     L040D
 ;
 ; while (Game_Mode == RUN_GAME_MODE){ // Game Mode
 ;
-	jmp     L0421
+	jmp     L0428
 ;
 ; debug = 0xba;
 ;
-L040C:	lda     #$BA
+L0413:	lda     #$BA
 	sta     _debug
+;
+; asm("BRK");
+;
+	brk
 ;
 ; while (NMI_flag == 0); // wait till v-blank
 ;
-L040D:	lda     _NMI_flag
-	beq     L040D
+L0414:	lda     _NMI_flag
+	beq     L0414
 ;
 ; debug = 0xbb;
 ;
@@ -1611,10 +1625,10 @@ L040D:	lda     _NMI_flag
 ;
 	lda     _joypad1old
 	and     #$10
-	bne     L0410
+	bne     L0417
 	lda     _joypad1
 	and     #$10
-	beq     L0410
+	beq     L0417
 ;
 ; Blank_sprite();
 ;
@@ -1648,12 +1662,12 @@ L040D:	lda     _NMI_flag
 ;
 ; if (((joypad1old & SELECT) == 0)&&((joypad1 & SELECT) != 0)){ // testing Game Over
 ;
-L0410:	lda     _joypad1old
+L0417:	lda     _joypad1old
 	and     #$20
-	bne     L0413
+	bne     L041A
 	lda     _joypad1
 	and     #$20
-	beq     L0413
+	beq     L041A
 ;
 ; Blank_sprite();
 ;
@@ -1687,12 +1701,12 @@ L0410:	lda     _joypad1old
 ;
 ; if (((joypad1old & UP) == 0)&&((joypad1 & UP) != 0)){
 ;
-L0413:	lda     _joypad1old
+L041A:	lda     _joypad1old
 	and     #$08
-	bne     L0416
+	bne     L041D
 	lda     _joypad1
 	and     #$08
-	beq     L0416
+	beq     L041D
 ;
 ; Play_Fx(SOUND_SHOOT);
 ;
@@ -1701,12 +1715,12 @@ L0413:	lda     _joypad1old
 ;
 ; if (((joypad1old & DOWN) == 0)&&((joypad1 & DOWN) != 0)){
 ;
-L0416:	lda     _joypad1old
+L041D:	lda     _joypad1old
 	and     #$04
-	bne     L0419
+	bne     L0420
 	lda     _joypad1
 	and     #$04
-	beq     L0419
+	beq     L0420
 ;
 ; Play_Fx(SOUND_LASER);
 ;
@@ -1715,12 +1729,12 @@ L0416:	lda     _joypad1old
 ;
 ; if (((joypad1old & B_BUTTON) == 0)&&((joypad1 & B_BUTTON) != 0)){
 ;
-L0419:	lda     _joypad1old
+L0420:	lda     _joypad1old
 	and     #$40
-	bne     L041C
+	bne     L0423
 	lda     _joypad1
 	and     #$40
-	beq     L041C
+	beq     L0423
 ;
 ; Play_Fx(SOUND_BOOM);
 ;
@@ -1729,12 +1743,12 @@ L0419:	lda     _joypad1old
 ;
 ; if (((joypad1old & A_BUTTON) == 0)&&((joypad1 & A_BUTTON) != 0)){
 ;
-L041C:	lda     _joypad1old
+L0423:	lda     _joypad1old
 	and     #$80
-	bne     L0435
+	bne     L043C
 	lda     _joypad1
 	and     #$80
-	beq     L0438
+	beq     L043F
 ;
 ; Play_Fx(SOUND_BIG_BOOM);
 ;
@@ -1743,23 +1757,23 @@ L041C:	lda     _joypad1old
 ;
 ; NMI_flag = 0;
 ;
-L0435:	lda     #$00
-L0438:	sta     _NMI_flag
+L043C:	lda     #$00
+L043F:	sta     _NMI_flag
 ;
 ; while (Game_Mode == RUN_GAME_MODE){ // Game Mode
 ;
-L0421:	lda     _Game_Mode
+L0428:	lda     _Game_Mode
 	cmp     #$01
-	jeq     L040C
+	jeq     L0413
 ;
 ; while (Game_Mode == PAUSE_MODE){ // Pause Mode
 ;
-	jmp     L0427
+	jmp     L042E
 ;
 ; while (NMI_flag == 0); // wait till v-blank
 ;
-L0422:	lda     _NMI_flag
-	beq     L0422
+L0429:	lda     _NMI_flag
+	beq     L0429
 ;
 ; Get_Input();
 ;
@@ -1773,10 +1787,10 @@ L0422:	lda     _NMI_flag
 ;
 	lda     _joypad1old
 	and     #$10
-	bne     L0436
+	bne     L043D
 	lda     _joypad1
 	and     #$10
-	beq     L0439
+	beq     L0440
 ;
 ; Blank_sprite();
 ;
@@ -1806,23 +1820,23 @@ L0422:	lda     _NMI_flag
 ;
 ; NMI_flag = 0;
 ;
-L0436:	lda     #$00
-L0439:	sta     _NMI_flag
+L043D:	lda     #$00
+L0440:	sta     _NMI_flag
 ;
 ; while (Game_Mode == PAUSE_MODE){ // Pause Mode
 ;
-L0427:	lda     _Game_Mode
+L042E:	lda     _Game_Mode
 	cmp     #$02
-	beq     L0422
+	beq     L0429
 ;
 ; while (Game_Mode == GAME_OVER_MODE){ // Game Over
 ;
-	jmp     L042E
+	jmp     L0435
 ;
 ; while (NMI_flag == 0); // wait till v-blank
 ;
-L0428:	lda     _NMI_flag
-	beq     L0428
+L042F:	lda     _NMI_flag
+	beq     L042F
 ;
 ; Get_Input();
 ;
@@ -1836,10 +1850,10 @@ L0428:	lda     _NMI_flag
 ;
 	lda     _joypad1old
 	and     #$20
-	bne     L042B
+	bne     L0432
 	lda     _joypad1
 	and     #$20
-	beq     L042B
+	beq     L0432
 ;
 ; Blank_sprite();
 ;
@@ -1882,15 +1896,15 @@ L0428:	lda     _NMI_flag
 ;
 ; else{
 ;
-	jmp     L042D
+	jmp     L0434
 ;
 ; ++Wait;
 ;
-L042B:	inc     _Wait
+L0432:	inc     _Wait
 ;
 ; if (Wait == 0)
 ;
-	bne     L042C
+	bne     L0433
 ;
 ; ++Wait2;
 ;
@@ -1898,9 +1912,9 @@ L042B:	inc     _Wait
 ;
 ; if (Wait2 == 2){
 ;
-L042C:	lda     _Wait2
+L0433:	lda     _Wait2
 	cmp     #$02
-	bne     L042D
+	bne     L0434
 ;
 ; All_Off();
 ;
@@ -1912,23 +1926,23 @@ L042C:	lda     _Wait2
 ;
 ; NMI_flag = 0;
 ;
-L042D:	lda     #$00
+L0434:	lda     #$00
 	sta     _NMI_flag
 ;
 ; while (Game_Mode == GAME_OVER_MODE){ // Game Over
 ;
-L042E:	lda     _Game_Mode
+L0435:	lda     _Game_Mode
 	cmp     #$03
-	beq     L0428
+	beq     L042F
 ;
 ; while (Game_Mode == VICTORY_MODE){ // Victory
 ;
-	jmp     L0434
+	jmp     L043B
 ;
 ; while (NMI_flag == 0); // wait till NMI
 ;
-L042F:	lda     _NMI_flag
-	beq     L042F
+L0436:	lda     _NMI_flag
+	beq     L0436
 ;
 ; Get_Input();
 ;
@@ -1942,10 +1956,10 @@ L042F:	lda     _NMI_flag
 ;
 	lda     _joypad1old
 	and     #$10
-	bne     L0437
+	bne     L043E
 	lda     _joypad1
 	and     #$10
-	beq     L043A
+	beq     L0441
 ;
 ; All_Off();
 ;
@@ -1957,18 +1971,18 @@ L042F:	lda     _NMI_flag
 ;
 ; NMI_flag = 0;
 ;
-L0437:	lda     #$00
-L043A:	sta     _NMI_flag
+L043E:	lda     #$00
+L0441:	sta     _NMI_flag
 ;
 ; while (Game_Mode == VICTORY_MODE){ // Victory
 ;
-L0434:	lda     _Game_Mode
+L043B:	lda     _Game_Mode
 	cmp     #$04
-	beq     L042F
+	beq     L0436
 ;
 ; while (1){ // infinite loop
 ;
-	jmp     L040B
+	jmp     L0412
 
 .endproc
 

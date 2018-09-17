@@ -54,6 +54,7 @@ void main (void) {
 				Play_Music(song);
 				debug = 0xae;
 				Wait_Vblank();
+				
 				debug = 0xaf;
 				//All_On(); //slight change...
 					PPU_CTRL = 0x91;
@@ -67,6 +68,7 @@ void main (void) {
 		
 		while (Game_Mode == RUN_GAME_MODE){ // Game Mode
 			debug = 0xba;
+			asm("BRK");
 			while (NMI_flag == 0); // wait till v-blank
 			debug = 0xbb;
 			Get_Input();

@@ -1,0 +1,212 @@
+Modules list:
+-------------
+reset.o:
+    HEADER            Offs=000000  Size=000010  Align=00001  Fill=0000
+    STARTUP           Offs=000000  Size=0000B5  Align=00001  Fill=0000
+    VECTORS           Offs=000000  Size=000006  Align=00001  Fill=0000
+    CHARS             Offs=000000  Size=002000  Align=00001  Fill=0000
+lesson11b.o:
+    CODE              Offs=000000  Size=000A58  Align=00001  Fill=0000
+    RODATA            Offs=000000  Size=00047C  Align=00001  Fill=0000
+    BSS               Offs=000000  Size=000098  Align=00001  Fill=0000
+    ZEROPAGE          Offs=000000  Size=00002E  Align=00001  Fill=0000
+    OAM               Offs=000000  Size=000100  Align=00001  Fill=0000
+    MAP               Offs=000000  Size=000200  Align=00001  Fill=0000
+asm4c.o:
+    CODE              Offs=000A58  Size=0003B4  Align=00001  Fill=0000
+    ZEROPAGE          Offs=00002E  Size=000004  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(aslax4.o):
+    CODE              Offs=000E0C  Size=000011  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(asrax4.o):
+    CODE              Offs=000E1D  Size=000019  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(condes.o):
+    CODE              Offs=000E36  Size=00000C  Align=00001  Fill=0000
+    DATA              Offs=000000  Size=000025  Align=00001  Fill=0000
+    ONCE              Offs=000000  Size=00000C  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(copydata.o):
+    CODE              Offs=000E42  Size=00002D  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(incsp2.o):
+    CODE              Offs=000E6F  Size=000016  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(pushax.o):
+    CODE              Offs=000E85  Size=00001A  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(shrax4.o):
+    CODE              Offs=000E9F  Size=000011  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(staspidx.o):
+    CODE              Offs=000EB0  Size=000016  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(zeropage.o):
+    ZEROPAGE          Offs=000032  Size=00001A  Align=00001  Fill=0000
+
+
+Segment list:
+-------------
+Name                   Start     End    Size  Align
+----------------------------------------------------
+CHARS                 000000  001FFF  002000  00001
+HEADER                000000  00000F  000010  00001
+ZEROPAGE              000000  00004B  00004C  00001
+OAM                   000200  0002FF  000100  00001
+MAP                   000300  0004FF  000200  00001
+DATA                  000500  000524  000025  00001
+BSS                   000525  0005BC  000098  00001
+STARTUP               00C000  00C0B4  0000B5  00001
+CODE                  00C0B5  00CF7A  000EC6  00001
+RODATA                00CF7B  00D3F6  00047C  00001
+ONCE                  00D41C  00D427  00000C  00001
+VECTORS               00FFFA  00FFFF  000006  00001
+
+
+Exports list by name:
+---------------------
+_BUFFER1                  000525 RLA    _BUFFER2                  000545 RLA    
+_BUFFER3                  000565 RLA    _BUFFER4                  000585 RLA    
+_BUFFER7                  0005B5 RLA    _Frame_Count              000001 RLZ    
+_Get_Input                00CB0D RLA    _NMI_flag                 000000 RLZ    
+_PPU_ADDRESS_High         000028 RLZ    _PPU_ADDRESS_Low          000029 RLZ    
+_Sprite_Zero              00CBAA RLA    _Super_Fast_Write_PPU     00CBB9 RLA    
+_Super_Fast_Write_PPU2    00CCFE RLA    _Wait_Vblank              00CB6D RLA    
+__CONSTRUCTOR_COUNT__     000000 REA    __CONSTRUCTOR_TABLE__     00C0B5 RLA    
+__DATA_LOAD__             00D3F7 RLA    __DATA_RUN__              000500 RLA    
+__DATA_SIZE__             000025 REA    __DESTRUCTOR_COUNT__      000000 REA    
+__DESTRUCTOR_TABLE__      00D3F7 RLA    __STACK_SIZE__            000100 REA    
+__STACK_START__           000700 REA    __STARTUP__               000001 REA    
+_joypad1                  00000A RLZ    _joypad1old               00000B RLZ    
+_joypad1test              00000C RLZ    _joypad2                  00000D RLZ    
+_joypad2old               00000E RLZ    _joypad2test              00000F RLZ    
+_main                     00CA52 RLA    aslax4                    00CEC1 RLA    
+asrax4                    00CED2 RLA    copydata                  00CEF7 RLA    
+incsp2                    00CF2C RLA    initlib                   00D41C RLA    
+ptr1                      00003A RLZ    ptr2                      00003C RLZ    
+pushax                    00CF3E RLA    shrax4                    00CF54 RLA    
+sp                        000032 RLZ    sreg                      000034 RLZ    
+staspidx                  00CF65 RLA    tmp1                      000042 RLZ    
+
+
+
+Exports list by value:
+----------------------
+_NMI_flag                 000000 RLZ    __CONSTRUCTOR_COUNT__     000000 REA    
+__DESTRUCTOR_COUNT__      000000 REA    _Frame_Count              000001 RLZ    
+__STARTUP__               000001 REA    _joypad1                  00000A RLZ    
+_joypad1old               00000B RLZ    _joypad1test              00000C RLZ    
+_joypad2                  00000D RLZ    _joypad2old               00000E RLZ    
+_joypad2test              00000F RLZ    __DATA_SIZE__             000025 REA    
+_PPU_ADDRESS_High         000028 RLZ    _PPU_ADDRESS_Low          000029 RLZ    
+sp                        000032 RLZ    sreg                      000034 RLZ    
+ptr1                      00003A RLZ    ptr2                      00003C RLZ    
+tmp1                      000042 RLZ    __STACK_SIZE__            000100 REA    
+__DATA_RUN__              000500 RLA    _BUFFER1                  000525 RLA    
+_BUFFER2                  000545 RLA    _BUFFER3                  000565 RLA    
+_BUFFER4                  000585 RLA    _BUFFER7                  0005B5 RLA    
+__STACK_START__           000700 REA    __CONSTRUCTOR_TABLE__     00C0B5 RLA    
+_main                     00CA52 RLA    _Get_Input                00CB0D RLA    
+_Wait_Vblank              00CB6D RLA    _Sprite_Zero              00CBAA RLA    
+_Super_Fast_Write_PPU     00CBB9 RLA    _Super_Fast_Write_PPU2    00CCFE RLA    
+aslax4                    00CEC1 RLA    asrax4                    00CED2 RLA    
+copydata                  00CEF7 RLA    incsp2                    00CF2C RLA    
+pushax                    00CF3E RLA    shrax4                    00CF54 RLA    
+staspidx                  00CF65 RLA    __DATA_LOAD__             00D3F7 RLA    
+__DESTRUCTOR_TABLE__      00D3F7 RLA    initlib                   00D41C RLA    
+
+
+
+Imports list:
+-------------
+_BUFFER1 (lesson11b.o):
+    asm4c.o                   asm4c.s(6)
+_BUFFER2 (lesson11b.o):
+    asm4c.o                   asm4c.s(6)
+_BUFFER3 (lesson11b.o):
+    asm4c.o                   asm4c.s(6)
+_BUFFER4 (lesson11b.o):
+    asm4c.o                   asm4c.s(6)
+_BUFFER7 (lesson11b.o):
+    asm4c.o                   asm4c.s(6)
+_Frame_Count (lesson11b.o):
+    reset.o                   reset.s(5)
+_Get_Input (asm4c.o):
+    lesson11b.o               lesson11b.s(103)
+_NMI_flag (lesson11b.o):
+    reset.o                   reset.s(5)
+_PPU_ADDRESS_High (lesson11b.o):
+    asm4c.o                   asm4c.s(5)
+_PPU_ADDRESS_Low (lesson11b.o):
+    asm4c.o                   asm4c.s(5)
+_Sprite_Zero (asm4c.o):
+    lesson11b.o               lesson11b.s(104)
+_Super_Fast_Write_PPU (asm4c.o):
+    lesson11b.o               lesson11b.s(105)
+_Super_Fast_Write_PPU2 (asm4c.o):
+    lesson11b.o               lesson11b.s(106)
+_Wait_Vblank (asm4c.o):
+    lesson11b.o               lesson11b.s(102)
+__CONSTRUCTOR_COUNT__ ([linker generated]):
+    condes.o                  runtime/condes.s(18)
+__CONSTRUCTOR_TABLE__ ([linker generated]):
+    condes.o                  runtime/condes.s(18)
+__DATA_LOAD__ ([linker generated]):
+    copydata.o                common/copydata.s(8)
+__DATA_RUN__ ([linker generated]):
+    copydata.o                common/copydata.s(8)
+__DATA_SIZE__ ([linker generated]):
+    copydata.o                common/copydata.s(8)
+__DESTRUCTOR_COUNT__ ([linker generated]):
+    condes.o                  runtime/condes.s(19)
+__DESTRUCTOR_TABLE__ ([linker generated]):
+    condes.o                  runtime/condes.s(19)
+__STACK_SIZE__ ([linker generated]):
+    reset.o                   reset.s(10)
+__STACK_START__ ([linker generated]):
+    reset.o                   reset.s(10)
+__STARTUP__ (reset.o):
+    lesson11b.o               lesson11b.s(13)
+_joypad1 (lesson11b.o):
+    asm4c.o                   asm4c.s(4)
+_joypad1old (lesson11b.o):
+    asm4c.o                   asm4c.s(4)
+_joypad1test (lesson11b.o):
+    asm4c.o                   asm4c.s(4)
+_joypad2 (lesson11b.o):
+    asm4c.o                   asm4c.s(4)
+_joypad2old (lesson11b.o):
+    asm4c.o                   asm4c.s(4)
+_joypad2test (lesson11b.o):
+    asm4c.o                   asm4c.s(4)
+_main (lesson11b.o):
+    reset.o                   reset.s(3)
+aslax4 (aslax4.o):
+    lesson11b.o               lesson11b.s(4047)
+    lesson11b.o               lesson11b.s(4047)
+asrax4 (asrax4.o):
+    lesson11b.o               lesson11b.s(4047)
+copydata (copydata.o):
+    reset.o                   reset.s(12)
+incsp2 (incsp2.o):
+    staspidx.o                runtime/staspidx.s(8)
+initlib (condes.o):
+    reset.o                   reset.s(12)
+ptr1 (zeropage.o):
+    staspidx.o                runtime/staspidx.s(9)
+    copydata.o                common/copydata.s(9)
+    lesson11b.o               lesson11b.s(11)
+ptr2 (zeropage.o):
+    copydata.o                common/copydata.s(9)
+pushax (pushax.o):
+    lesson11b.o               lesson11b.s(4047)
+shrax4 (shrax4.o):
+    lesson11b.o               lesson11b.s(4047)
+sp (zeropage.o):
+    incsp2.o                  runtime/incsp2.s(8)
+    staspidx.o                runtime/staspidx.s(9)
+    pushax.o                  runtime/pushax.s(8)
+    reset.o                   /usr/share/cc65/asminc/zeropage.inc(11)
+sreg (zeropage.o):
+    lesson11b.o               lesson11b.s(10)
+staspidx (staspidx.o):
+    lesson11b.o               lesson11b.s(4047)
+tmp1 (zeropage.o):
+    staspidx.o                runtime/staspidx.s(9)
+    shrax4.o                  runtime/shrax4.s(8)
+    copydata.o                common/copydata.s(9)
+    asrax4.o                  runtime/asrax4.s(9)
+    aslax4.o                  runtime/aslax4.s(8)
+

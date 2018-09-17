@@ -8,22 +8,22 @@ reset.o:
     VECTORS           Offs=000000  Size=000006  Align=00001  Fill=0000
     CHARS             Offs=000000  Size=002000  Align=00001  Fill=0000
 SPACY.o:
-    CODE              Offs=000000  Size=000427  Align=00001  Fill=0000
+    CODE              Offs=000000  Size=000467  Align=00001  Fill=0000
     RODATA            Offs=000C3D  Size=0001A3  Align=00001  Fill=0000
-    BSS               Offs=000000  Size=000010  Align=00001  Fill=0000
+    BSS               Offs=000000  Size=000011  Align=00001  Fill=0000
     ZEROPAGE          Offs=000011  Size=00001C  Align=00001  Fill=0000
     OAM               Offs=000000  Size=000100  Align=00001  Fill=0000
 asm4c.o:
-    CODE              Offs=000427  Size=00023E  Align=00001  Fill=0000
+    CODE              Offs=000467  Size=00023E  Align=00001  Fill=0000
     ZEROPAGE          Offs=00002D  Size=00000A  Align=00001  Fill=0000
 /usr/share/cc65/lib/nes.lib(asrax4.o):
-    CODE              Offs=000665  Size=000019  Align=00001  Fill=0000
+    CODE              Offs=0006A5  Size=000019  Align=00001  Fill=0000
 /usr/share/cc65/lib/nes.lib(condes.o):
-    CODE              Offs=00067E  Size=00000C  Align=00001  Fill=0000
+    CODE              Offs=0006BE  Size=00000C  Align=00001  Fill=0000
     DATA              Offs=000000  Size=000025  Align=00001  Fill=0000
     ONCE              Offs=000000  Size=00000C  Align=00001  Fill=0000
 /usr/share/cc65/lib/nes.lib(copydata.o):
-    CODE              Offs=00068A  Size=00002D  Align=00001  Fill=0000
+    CODE              Offs=0006CA  Size=00002D  Align=00001  Fill=0000
 /usr/share/cc65/lib/nes.lib(zeropage.o):
     ZEROPAGE          Offs=000037  Size=00001A  Align=00001  Fill=0000
 
@@ -37,38 +37,38 @@ HEADER                000000  00000F  000010  00001
 ZEROPAGE              000000  000050  000051  00001
 OAM                   000200  0002FF  000100  00001
 DATA                  000300  000324  000025  00001
-BSS                   000325  000334  000010  00001
+BSS                   000325  000335  000011  00001
 STARTUP               00C000  00C160  000161  00001
-CODE                  00C161  00C817  0006B7  00001
-RODATA                00C818  00D5F7  000DE0  00001
-ONCE                  00D61D  00D628  00000C  00001
+CODE                  00C161  00C857  0006F7  00001
+RODATA                00C858  00D637  000DE0  00001
+ONCE                  00D65D  00D668  00000C  00001
 VECTORS               00FFFA  00FFFF  000006  00001
 
 
 Exports list by name:
 ---------------------
-_Blank_sprite             00C069 RLA    _Draw_Sprites             00C625 RLA    
+_Blank_sprite             00C069 RLA    _Draw_Sprites             00C665 RLA    
 _Frame_Count              000012 RLZ    _Game_Mode                000025 RLZ    
-_Get_Input                00C588 RLA    _Lives                    00002B RLZ    
-_Music_Update             00C940 RLA    _NMI_flag                 000011 RLZ    
-_Play_Fx                  00CC36 RLA    _Play_Music               00C8B2 RLA    
-_Reset                    00C000 RLA    _Reset_Music              00C818 RLA    
+_Get_Input                00C5C8 RLA    _Lives                    00002B RLZ    
+_Music_Update             00C980 RLA    _NMI_flag                 000011 RLZ    
+_Play_Fx                  00CC76 RLA    _Play_Music               00C8F2 RLA    
+_Reset                    00C000 RLA    _Reset_Music              00C858 RLA    
 _SPRITES                  000200 RLA    _Score1                   000028 RLZ    
 _Score2                   000029 RLZ    _Score3                   00002A RLZ    
-_Sprite_Index             00002C RLZ    _UnRLE                    00C5EE RLA    
+_Sprite_Index             00002C RLZ    _UnRLE                    00C62E RLA    
 _Vert_scroll              00001C RLZ    _Vert_scroll2             00001D RLZ    
-_Wait_Vblank              00C5E8 RLA    __CONSTRUCTOR_COUNT__     000000 REA    
-__CONSTRUCTOR_TABLE__     00C161 RLA    __DATA_LOAD__             00D5F8 RLA    
+_Wait_Vblank              00C628 RLA    __CONSTRUCTOR_COUNT__     000000 REA    
+__CONSTRUCTOR_TABLE__     00C161 RLA    __DATA_LOAD__             00D638 RLA    
 __DATA_RUN__              000300 RLA    __DATA_SIZE__             000025 REA    
-__DESTRUCTOR_COUNT__      000000 REA    __DESTRUCTOR_TABLE__      00D5F8 RLA    
+__DESTRUCTOR_COUNT__      000000 REA    __DESTRUCTOR_TABLE__      00D638 RLA    
 __STACK_SIZE__            000100 REA    __STACK_START__           000700 REA    
 __STARTUP__               000001 REA    _joypad1                  000016 RLZ    
 _joypad1old               000017 RLZ    _joypad1test              000018 RLZ    
 _joypad2                  000019 RLZ    _joypad2old               00001A RLZ    
 _joypad2test              00001B RLZ    _main                     00C3A6 RLA    
 _temp                     000021 RLZ    _temp2                    000022 RLZ    
-_temp3                    000023 RLZ    asrax4                    00C7C6 RLA    
-copydata                  00C7EB RLA    initlib                   00D61D RLA    
+_temp3                    000023 RLZ    asrax4                    00C806 RLA    
+copydata                  00C82B RLA    initlib                   00D65D RLA    
 ptr1                      00003F RLZ    ptr2                      000041 RLZ    
 sp                        000037 RLZ    tmp1                      000047 RLZ    
 
@@ -93,13 +93,13 @@ tmp1                      000047 RLZ    __STACK_SIZE__            000100 REA
 _SPRITES                  000200 RLA    __DATA_RUN__              000300 RLA    
 __STACK_START__           000700 REA    _Reset                    00C000 RLA    
 _Blank_sprite             00C069 RLA    __CONSTRUCTOR_TABLE__     00C161 RLA    
-_main                     00C3A6 RLA    _Get_Input                00C588 RLA    
-_Wait_Vblank              00C5E8 RLA    _UnRLE                    00C5EE RLA    
-_Draw_Sprites             00C625 RLA    asrax4                    00C7C6 RLA    
-copydata                  00C7EB RLA    _Reset_Music              00C818 RLA    
-_Play_Music               00C8B2 RLA    _Music_Update             00C940 RLA    
-_Play_Fx                  00CC36 RLA    __DATA_LOAD__             00D5F8 RLA    
-__DESTRUCTOR_TABLE__      00D5F8 RLA    initlib                   00D61D RLA    
+_main                     00C3A6 RLA    _Get_Input                00C5C8 RLA    
+_Wait_Vblank              00C628 RLA    _UnRLE                    00C62E RLA    
+_Draw_Sprites             00C665 RLA    asrax4                    00C806 RLA    
+copydata                  00C82B RLA    _Reset_Music              00C858 RLA    
+_Play_Music               00C8F2 RLA    _Music_Update             00C980 RLA    
+_Play_Fx                  00CC76 RLA    __DATA_LOAD__             00D638 RLA    
+__DESTRUCTOR_TABLE__      00D638 RLA    initlib                   00D65D RLA    
 
 
 
@@ -189,7 +189,7 @@ _temp2 (SPACY.o):
 _temp3 (SPACY.o):
     asm4c.o                   asm4c.s(4)
 asrax4 (asrax4.o):
-    SPACY.o                   SPACY.s(1889)
+    SPACY.o                   SPACY.s(1988)
 copydata (copydata.o):
     reset.o                   reset.s(14)
 initlib (condes.o):

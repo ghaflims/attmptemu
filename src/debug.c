@@ -1,6 +1,7 @@
 #include "debug.h"
 void print_debug(cpu_t* cpu,uint8_t op){
 	printf("----------------CYC: [%08d]------------------\n",cpu->cyc);
+	printf("-------------PRE_CYC: [%08d]------------------\n",cpu->pre_cyc);
 	printf("A:  [0x%02X]\t",cpu->a);
 	printf("X:  [0x%02X]\t",cpu->x);
 	printf("Y:  [0x%02X]\n",cpu->y);
@@ -51,5 +52,6 @@ void debug_ppu(ppu_t* ppu){
 	printf("***********************************************\n");
 	printf("PPUCTRL:  [0x%02X]\t",ppu->PPUCTRL);
 	printf("PPUMASK:  [0x%02X]\n",ppu->PPUMASK);
+	printf("PPUSTATUS:  [0x%02X]\n",ppu->PPUSTATUS);
 	printf("***********************************************\n");
 }

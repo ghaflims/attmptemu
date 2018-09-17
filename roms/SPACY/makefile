@@ -5,11 +5,9 @@ NAME = SPACY
 
 
 $(NAME).nes: $(NAME).o reset.o asm4c.o nes.cfg
-	$(LD65) -C nes.cfg -o $(NAME).nes reset.o $(NAME).o asm4c.o nes.lib
+	$(LD65) -C nes.cfg -o $(NAME).nes reset.o $(NAME).o asm4c.o nes.lib -Ln spacy.txt -m map.map
 # if linux uncomment the next line
-#	rm *.o
-# windows	
-	del *.o	
+	rm *.o
 	@echo $(NAME).nes created
 
 reset.o: reset.s
@@ -26,7 +24,5 @@ $(NAME).s: $(NAME).c
 
 clean:
 # if linux uncomment the next line
-#	rm $(NAME).nes
-# windows
-	del $(NAME).nes
+	rm $(NAME).nes
 

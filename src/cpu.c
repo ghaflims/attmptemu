@@ -24,6 +24,7 @@ void cpu_init(cpu_t* cpu){
 	cpu->sr = 0x24;
 	debug_flag = 0;
 	debug_count = 0;
+
 }
 void cpu_reset(cpu_t* cpu){
 	cpu->pc =  reset_vector_address();
@@ -891,7 +892,9 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				
 		}
 	// run cpu until the requested cycles..
-	cycles-=ticktable[op]+cpu->extra_cyc+cpu->nmi_cyc;
+	cpu->pre_cyc = cpu->cur_cyc;
+	cpu->cur_cyc = ticktable[op]+cpu->extra_cyc+cpu->nmi_cyc;
+	cycles-= cpu->cur_cyc;
 	// todo: tick the ppu 3x times as the value in ticktable[op]
 	int i = 0;
 	for(i=0;i<(ticktable[op]+cpu->extra_cyc+cpu->nmi_cyc)*3;i++)

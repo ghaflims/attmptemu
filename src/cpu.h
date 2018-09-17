@@ -57,6 +57,8 @@ typedef struct{
   uint32_t cyc;
   uint32_t extra_cyc;
   uint32_t nmi_cyc;
+  uint32_t cur_cyc;
+  uint32_t pre_cyc;
   uint16_t pc;
   uint8_t x,y,a,sp;
   uint8_t op;

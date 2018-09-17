@@ -73,6 +73,7 @@ void emu_update_screen(){
 		hal_flush_buf(&bg);
 	if(ppu_is_show_sprites())
 		hal_flush_buf(&fg);
+
 	
 	hal_flip_display();
 	

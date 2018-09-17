@@ -108,6 +108,7 @@ static inline bool is_rendering_enabled(){
 	return ppu_is_show_bg() || ppu_is_show_sprites();
 }
 void ppu_init(){
+	debug_switch = 0;
 	scanline = 240;
 	frame_count = 0;
 	odd_frame = false;
@@ -335,8 +336,14 @@ static inline void render_pixel(){
 						cpu_cyc_b = cpu.cyc;
 						cpu_cyc_e = 0;
 						ppu_sprite0_hit_occured = true;
-						printf("Sprit Hit0 occured on: SL:%d,PPU CYC:%d\n",scanline,cycle);
+						printf("Sprit Hit0 occured on: SL:%d,PPU CYC:%d,PC:%04X\n",scanline,cycle,cpu.pc);
 						printf("sprite_x[i]: %d\t x:%d\t ppu_is_sprite_showed_in_leftmost_8px:%d\t ppu_is_bg_showed_in_leftmost_8px:%d\t y:%d \n",sprite_x[i],x,ppu_is_sprite_showed_in_leftmost_8px(),ppu_is_bg_showed_in_leftmost_8px(),y);
+					}
+					if(y==30 && x == 187 && debug_switch){
+						printf("Forced Sprite 0 hit\n");
+						ppu_set_sprite0_hit(true);
+						ppu_sprite0_hit_occured = true;
+						
 					}
 				}
 			}
@@ -639,7 +646,9 @@ void ppu_tick(void){
     if(VBLANK_END){
 		if(BIT_CHECK(ppu.PPUSTATUS,6)){
 			cpu_cyc_e = cpu.cyc;
-			printf("Im in\n");
+			if(debug_switch){
+				printf("VBLANK_END: sprite0 hit  is set.. now it will reset\n");
+			}
 		}
 		ppu_set_sprite0_hit(false);
 		ppu_sprite0_hit_occured = false;
