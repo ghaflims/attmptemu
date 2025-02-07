@@ -8,6 +8,8 @@
 
 //uint8_t cpu_ram[0x8000] = {0}; is it a BUGG??
 uint8_t cpu_ram[0x800] = {0};
+int debug_flag = 1;
+int debug_count = 0;
 static inline uint16_t nmi_vector_address(){
 	return (rb(NMI_VEC) | (rb(NMI_VEC+1)<<8)); 
 }
@@ -22,14 +24,18 @@ void cpu_init(cpu_t* cpu){
 	//*cpu = {.cyc=0,.pc=0,.x=0,.y=0,.a=0,.sp=00,.sr=0x24};
 	memset(cpu,0,sizeof(cpu_t));
 	cpu->sr = 0x24;
-	debug_flag = 0;
+	debug_flag = 1;
 	debug_count = 0;
 
 }
 void cpu_reset(cpu_t* cpu){
 	cpu->pc =  reset_vector_address();
+	//TODO remove below line
+	cpu->pc = 0xc000;
+	//printf("%04X\n",cpu->pc);
 	cpu->sp -= 3;
 	cpu->sr |= IF;
+	cpu->passed_cyc = 7;
 }
 void cpu_trigger_nmi(cpu_t* cpu){
 	if(ppu_is_nmi_enabled()){
@@ -58,18 +64,20 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			debug_flag = 1;
 		}
 
-		if(debug_flag){
-			print_debug(cpu,rb(cpu->pc));
-			//mem_dump(&cpu_ram[0x0020], 0x20);
-			debug_count++;
-		}
-		if(debug_count == 256*4){
-			debug_flag = 0;
-		}
+		
 		uint8_t op = rb(cpu->pc++);
 		cpu->op = op;
 		// update the cycle timing.. this will not take in account page crossing or special additional timing..
 		cpu->cyc+=ticktable[op];
+		if(debug_flag){
+			//print_debug(cpu,rb(cpu->pc));
+			//mem_dump(&cpu_ram[0x0020], 0x20);
+			print_neslog(cpu,op);
+			debug_count++;
+		}
+		if(debug_count == 256*32){
+			debug_flag = 0;
+		}
 		// temp address to be used inside case statment
 		uint16_t ta=0;
 		// temp value to be used inside case statment
@@ -227,7 +235,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				offset = (int8_t)rb(cpu->pc);
 				if(cpu->f.z){
 					// check if the branch corsses page
-					if((cpu->pc & 0xff00) != ((cpu->pc + offset) & 0xff00))
+					//fixing the calculation of where the page starts
+					if(((cpu->pc+1) & 0xff00) != ((cpu->pc + offset) & 0xff00))
 						cpu->extra_cyc++;
 					cpu->pc+=offset;
 					// add extra cycle because the brach succeed
@@ -249,8 +258,15 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flag(cpu,NF,tv&0x80);
 			break;
 			case BMI_REL:
+				// fixed a bug not calculating extra cycle when crossing page
+				offset = (int8_t)rb(cpu->pc);
 				if(cpu->f.n){
-					cpu->pc+=(int8_t)rb(cpu->pc);
+					// check if the branch corsses page
+					if(((cpu->pc+1) & 0xff00) != ((cpu->pc + offset) & 0xff00))
+						cpu->extra_cyc++;
+					cpu->pc+=offset;
+					// add extra cycle because the brach succeed
+					cpu->extra_cyc++;
 				}
 				cpu->pc++;
 			break;
@@ -486,6 +502,7 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case JMP_AB:
 				cpu->pc = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				//printf("%04X\n",cpu->pc);
 			break;
 			case JMP_IN:
 				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
@@ -625,11 +642,12 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				wb(ta,tv);
 			break;
 			case LSR_ZPX:
-				tv = rb(ZP(cpu->pc + cpu->x));
+				// fixed bug not reading value at address pc (not reading inst parameter)
+				tv = rb(ZP(rb(cpu->pc) + cpu->x));
 				set_flag(cpu,CF,tv&0x01);
 				tv = (tv>>1) & 0x7f;
 				set_flags(cpu,tv);
-				wb(ZP(cpu->pc++ + cpu->x),tv);
+				wb(ZP(rb(cpu->pc++) + cpu->x),tv);
 			break;
 			case ORA_IMM:
 				cpu->a |= rb(cpu->pc++);
@@ -861,6 +879,8 @@ void cpu_exec(cpu_t* cpu, long cycles){
 			break;
 			case STY_AB:
 				wb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),0),cpu->y);
+				//fix bug PC was not updated
+				cpu->pc+=2;
 			break;
 			case TAX:
 				cpu->x = cpu->a;
@@ -895,10 +915,15 @@ void cpu_exec(cpu_t* cpu, long cycles){
 	cpu->pre_cyc = cpu->cur_cyc;
 	cpu->cur_cyc = ticktable[op]+cpu->extra_cyc+cpu->nmi_cyc;
 	cycles-= cpu->cur_cyc;
+	cpu->passed_cyc+=cpu->cur_cyc;
+	//printf("CYC:%d\n",cpu->passed_cyc);
+
 	// todo: tick the ppu 3x times as the value in ticktable[op]
-	int i = 0;
-	for(i=0;i<(ticktable[op]+cpu->extra_cyc+cpu->nmi_cyc)*3;i++)
-		ppu_tick();
+	if(cpu->passed_cyc>33132){
+		int i = 0;
+		for(i=0;i<(ticktable[op]+cpu->extra_cyc+cpu->nmi_cyc)*3;i++)
+			ppu_tick();
+		}
 	}
 	cpu->nmi_cyc = 0;
 }

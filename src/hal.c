@@ -5,6 +5,9 @@
 #include <SDL2/SDL.h>
 extern cpu_t cpu;
 extern ppu_t ppu;
+uint32_t fb[SCREEN_H * SCREEN_W];
+// color map
+uint32_t cmap[64];
 // bytes per pixel
 #define BPP 4
 // this will hold the surface that contains the pixel.. (CPU)
@@ -29,9 +32,9 @@ void parse_events(){
 	if(evt.type == SDL_QUIT)
 		emu_running = false;
 	if(evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_d){
-		print_debug(&cpu,cpu.op);
-		debug_ppu(&ppu);
-		debug_switch^=1;
+		//print_debug(&cpu,cpu.op);
+		//debug_ppu(&ppu);
+		//debug_switch^=1;
 	}
 }
 

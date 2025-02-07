@@ -1,7 +1,7 @@
 #ifndef _ROM_H_
 #define _ROM_H_
 #include <stdint.h>
-uint8_t* rom;
+
 typedef struct {
 	uint8_t signature[4];
 	uint8_t prg_count;
@@ -10,7 +10,7 @@ typedef struct {
 	uint8_t flag7;
 	uint8_t reserved[8];
 } ines_t;
-ines_t ines;
+
 
 // refactor later 
 void rom_init(void);

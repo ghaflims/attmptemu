@@ -61,9 +61,7 @@ typedef struct {
 
 // external frame buffer defined in emu.c
 extern pbuf_t bg,bbg,fg;
-uint32_t fb[SCREEN_H * SCREEN_W];
-// color map
-uint32_t cmap[64];
+
 static const color_t palette[64] = {
 	{ 0x80, 0x80, 0x80 }, 
 	{ 0x00, 0x00, 0xBB }, 

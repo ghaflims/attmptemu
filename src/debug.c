@@ -1,4 +1,18 @@
 #include "debug.h"
+void print_neslog(cpu_t* cpu, uint8_t op){
+	printf("%04X\t",(cpu->pc-1));
+	printf("%02X\t",op);
+	// op parameter must go here
+	printf("%s\t",opcode_str[op]);
+	printf("A:%02X\t",cpu->a);
+	printf("X:%02X\t",cpu->x);
+	printf("Y:%02X\t",cpu->y);
+	printf("P:%02X\t",cpu->sr);
+	printf("SP:%02X\t",cpu->sp);
+	// PPU must go here
+	printf("CYC:%d\n",cpu->passed_cyc);
+}
+
 void print_debug(cpu_t* cpu,uint8_t op){
 	printf("----------------CYC: [%08d]------------------\n",cpu->cyc);
 	printf("-------------PRE_CYC: [%08d]------------------\n",cpu->pre_cyc);
@@ -17,7 +31,7 @@ void print_debug(cpu_t* cpu,uint8_t op){
 	printf("%c",(cpu->f.z) ? 'Z':'z');
 	printf("%c",(cpu->f.c) ? 'C':'c');
 	printf("]\n");
-	//printf("Cycle: [%d]\n",cpu->cyc);
+	printf("Cycle: [%d]\n",cpu->cyc);
 
 	//printf("----------------OP: [0x%02X]------------------------\n\n",op);
 	printf("----------------OP: [0x%02X] %s ---------------------\n\n",op,opcode_str[op]);
@@ -47,7 +61,7 @@ void mem_dump(const void* mem,size_t len){
 void ppu_dump(int x, int y, uint16_t nt, uint16_t lv){
 	printf("y:%03d\tx:%03d\tnt:0x%04x\tlv:0x%04x\n",y,x,nt,lv);
 }
-
+/*
 void debug_ppu(ppu_t* ppu){
 	printf("***********************************************\n");
 	printf("PPUCTRL:  [0x%02X]\t",ppu->PPUCTRL);
@@ -55,3 +69,4 @@ void debug_ppu(ppu_t* ppu){
 	printf("PPUSTATUS:  [0x%02X]\n",ppu->PPUSTATUS);
 	printf("***********************************************\n");
 }
+*/

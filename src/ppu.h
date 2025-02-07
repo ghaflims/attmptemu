@@ -30,18 +30,8 @@ typedef struct {
 	int mirroring_xor;
 	int scanline;
 }ppu_t;
-ppu_t ppu;
 
-static const uint16_t ppu_base_nametable_addrs[4] = {0x2000,0x2400,0x2800,0x2c00};
-//16KB of ppu memory.. should I make it a pointer and use malloc
-uint8_t ppu_ram[0x4000];
-//256 bytes for sprite memory
-uint8_t ppu_oam[0x100];
-uint8_t ppu_oam2[8*4]; // 8 sprites each takes 4 bytes
-// cached values for the low and high pattern this is to speed up it's just a look up..
-// span all the possibilities from 0 - 255
-uint8_t ppu_l_h_cache[256][256][8];
-uint8_t ppu_l_h_flip_cache[256][256][8];
+
 void ppu_init(void);
 //ior=io read,iow=io write
 uint8_t ppu_ior(uint16_t addr);
@@ -58,5 +48,5 @@ bool ppu_is_show_sprites();
 void ppu_oam_wb(uint8_t data);
 void ppu_tick(void);
 
-bool debug_switch;
+
 #endif
