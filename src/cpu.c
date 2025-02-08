@@ -31,7 +31,7 @@ void cpu_init(cpu_t* cpu){
 void cpu_reset(cpu_t* cpu){
 	cpu->pc =  reset_vector_address();
 	//TODO remove below line
-	cpu->pc = 0xc000;
+	//cpu->pc = 0xc000;
 	//printf("%04X\n",cpu->pc);
 	cpu->sp -= 3;
 	cpu->sr |= IF;
@@ -199,11 +199,12 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				wb(ta,tv);
 			break;
 			case ASL_ZPX:
-				tv = rb(ZP(cpu->pc + cpu->x));
+				//fixed bug not reading inst parameter instead was reading pc value
+				tv = rb(ZP(rb(cpu->pc) + cpu->x));
 				set_flag(cpu,CF,tv&0x80);
 				tv = (tv<<1) & 0xfe;
 				set_flags(cpu,tv);
-				wb(ZP(cpu->pc++ + cpu->x),tv);			
+				wb(ZP(rb(cpu->pc++) + cpu->x),tv);			
 			break;
 			case BCC_REL:
 				// need to cast value from memory to signed value to support forward and backward brancing :)
@@ -836,9 +837,10 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				cpu->pc+=2;
 			break;
 			case STA_ABX:
+				//fixed problem with timing it is always 5 no extra cycle
 				wb(mem_abs(rb(cpu->pc),rb(cpu->pc+1),cpu->x),cpu->a);
 				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
-				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
+				//cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
 				cpu->pc+=2;
 			break;
 			case STA_ABY:
@@ -906,8 +908,99 @@ void cpu_exec(cpu_t* cpu, long cycles){
 				set_flags(cpu,cpu->a);
 			break;
 			case WAI:break;
+			// implementing unofficial op codes
+			case 0x04:
+				cpu->pc++;
+				break;
+			case 0x44:
+				cpu->pc++;
+				break;
+			case 0x0c:
+				cpu->pc+=2;
+				break;
+			case 0x14:
+				cpu->pc++;
+				break;
+			case 0x1a:
+				break;
+			case 0x54:
+				cpu->pc++;
+				break;
+			case 0x5a:
+				break;
+			case 0xd4:
+				cpu->pc++;
+				break;
+			case 0xda:
+				break;
+			case 0x80:
+				cpu->pc++;
+				break;
+			case 0x89:
+				cpu->pc++;
+				break;
+			case 0x1c:
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
+				cpu->pc+=2;
+				break;
+			case 0x3c:
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
+				cpu->pc+=2;
+				break;
+			case 0x5c:
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
+				cpu->pc+=2;
+				break;
+			case 0xdc:
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
+				cpu->pc+=2;
+				break;
+			case 0xfc:
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
+				cpu->pc+=2;
+				break;
+			case 0x64:
+				cpu->pc++;
+				break;
+			case 0x34:
+				cpu->pc++;
+				break;
+			case 0x57:
+				cpu->pc++;
+				break;
+			case 0x74:
+				cpu->pc++;
+				break;
+			case 0xf4:
+				cpu->pc++;
+				break;
+			case 0x7c:
+				ta = mem_abs(rb(cpu->pc),rb(cpu->pc+1),0);
+				cpu->extra_cyc+= ((ta & 0xff00) != ((ta + cpu->x) & 0xff00)) ? 1:0;
+				cpu->pc+=2;
+				break;
+			case 0xa3:
+				//TODO
+				//need to implement this
+				cpu->pc++;
+				break;
+			case 0x7a:
+				break;
+			case 0xfa:
+				break;
+			case 0x3a:
+				break;
+			case 0xa7:
+				break;
+
 
 			default:
+				printf("****************************************PANIC****************************************\n");
 				break;
 				
 		}
