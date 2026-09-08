@@ -1,6 +1,21 @@
 #include "debug.h"
+void print_neslog(cpu_t* cpu, uint8_t op){
+	printf("%04X\t",(cpu->pc-1));
+	printf("%02X\t",op);
+	// op parameter must go here
+	printf("%s\t",opcode_str[op]);
+	printf("A:%02X\t",cpu->a);
+	printf("X:%02X\t",cpu->x);
+	printf("Y:%02X\t",cpu->y);
+	printf("P:%02X\t",cpu->sr);
+	printf("SP:%02X\t",cpu->sp);
+	// PPU must go here
+	printf("CYC:%d\n",cpu->passed_cyc);
+}
+
 void print_debug(cpu_t* cpu,uint8_t op){
 	printf("----------------CYC: [%08d]------------------\n",cpu->cyc);
+	printf("-------------PRE_CYC: [%08d]------------------\n",cpu->pre_cyc);
 	printf("A:  [0x%02X]\t",cpu->a);
 	printf("X:  [0x%02X]\t",cpu->x);
 	printf("Y:  [0x%02X]\n",cpu->y);
@@ -16,7 +31,7 @@ void print_debug(cpu_t* cpu,uint8_t op){
 	printf("%c",(cpu->f.z) ? 'Z':'z');
 	printf("%c",(cpu->f.c) ? 'C':'c');
 	printf("]\n");
-	//printf("Cycle: [%d]\n",cpu->cyc);
+	printf("Cycle: [%d]\n",cpu->cyc);
 
 	//printf("----------------OP: [0x%02X]------------------------\n\n",op);
 	printf("----------------OP: [0x%02X] %s ---------------------\n\n",op,opcode_str[op]);
@@ -24,12 +39,12 @@ void print_debug(cpu_t* cpu,uint8_t op){
 }
 
 void mem_dump(const void* mem,size_t len){
-	const int COL_SIZE = 16;
+	const int COL_SIZE = 8;
 	size_t i;
 	for(i=0; i< len + ((len % COL_SIZE) ? (COL_SIZE - len % COL_SIZE) : 0); ++i){
 		//the offset
 		if(i % COL_SIZE == 0){
-			printf("0x%04x: ",i);
+			printf("0x%04lx: ",i);
 		}
 		//the data
 		if(i < len){
@@ -42,3 +57,16 @@ void mem_dump(const void* mem,size_t len){
 			putchar('\n');
 	}
 }
+
+void ppu_dump(int x, int y, uint16_t nt, uint16_t lv){
+	printf("y:%03d\tx:%03d\tnt:0x%04x\tlv:0x%04x\n",y,x,nt,lv);
+}
+/*
+void debug_ppu(ppu_t* ppu){
+	printf("***********************************************\n");
+	printf("PPUCTRL:  [0x%02X]\t",ppu->PPUCTRL);
+	printf("PPUMASK:  [0x%02X]\n",ppu->PPUMASK);
+	printf("PPUSTATUS:  [0x%02X]\n",ppu->PPUSTATUS);
+	printf("***********************************************\n");
+}
+*/

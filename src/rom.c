@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+extern uint8_t mmc_id;
+ines_t ines;
+uint8_t* rom;
 void rom_init(void){
 	// allocate 1MB for reading the rom file.. too much ??!!
 	rom = calloc(1*1024*1024,sizeof(uint8_t));
@@ -31,6 +34,7 @@ int readrom(char* file){
 	memcpy(&ines,rom,sizeof(ines_t));
 	//fread(&ines,sizeof(ines_t),1,fp);
 	mmc_id = (ines.flag6 >> 4) & 0x0f;
+	//printf("flag6: %02x\n",ines.flag6);
 	//set mirroring
 	//avoid magic numbers
 	//TODO better documentation.. refer to nes Documentation

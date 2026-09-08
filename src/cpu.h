@@ -55,8 +55,14 @@ static const char opcode_str[256][15] = {
 
 typedef struct{
   uint32_t cyc;
+  uint32_t extra_cyc;
+  uint32_t nmi_cyc;
+  uint32_t cur_cyc;
+  uint32_t pre_cyc;
+  uint32_t passed_cyc;
   uint16_t pc;
   uint8_t x,y,a,sp;
+  uint8_t op;
   union{
       uint8_t sr;
       struct{
@@ -79,4 +85,6 @@ void cpu_trigger_nmi(cpu_t* cpu);
 void cpu_exec(cpu_t* cpu, long cycles);
 uint8_t cpu_ram_ior(uint16_t addr);
 void cpu_ram_iow(uint16_t addr, uint8_t data);
+//int debug_flag;
+//int debug_count;
 #endif

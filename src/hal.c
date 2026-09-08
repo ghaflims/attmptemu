@@ -1,8 +1,13 @@
 #include "hal.h"
 #include "ppu.h"
+#include "debug.h"
 #include <stdbool.h>
 #include <SDL2/SDL.h>
-
+extern cpu_t cpu;
+extern ppu_t ppu;
+uint32_t fb[SCREEN_H * SCREEN_W];
+// color map
+uint32_t cmap[64];
 // bytes per pixel
 #define BPP 4
 // this will hold the surface that contains the pixel.. (CPU)
@@ -26,9 +31,15 @@ void parse_events(){
 	SDL_PollEvent(&evt);
 	if(evt.type == SDL_QUIT)
 		emu_running = false;
+	if(evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_d){
+		//print_debug(&cpu,cpu.op);
+		//debug_ppu(&ppu);
+		//debug_switch^=1;
+	}
 }
 
 void wait_for_frame(){
+	//SDL_Delay(16);
 	SDL_Delay(16);
 }
 void hal_set_bg_color(int c){

@@ -40,7 +40,7 @@ void emu_run(){
 		wait_for_frame();
 		int scanlines = 262;
 		while(scanlines-- > 0){
-			ppu_run(1);
+			//ppu_run(1);
 			cpu_exec(&cpu,1364/12);
 		}
 		parse_events();
@@ -73,6 +73,7 @@ void emu_update_screen(){
 		hal_flush_buf(&bg);
 	if(ppu_is_show_sprites())
 		hal_flush_buf(&fg);
+
 	
 	hal_flip_display();
 	

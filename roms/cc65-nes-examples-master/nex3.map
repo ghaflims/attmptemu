@@ -1,0 +1,201 @@
+Modules list:
+-------------
+crt0.o:
+    HEADER            Offs=000000  Size=000010  Align=00001  Fill=0000
+    STARTUP           Offs=000000  Size=000D4F  Align=00001  Fill=0000
+    VECTORS           Offs=000000  Size=000006  Align=00001  Fill=0000
+    CHARS             Offs=000000  Size=002000  Align=00001  Fill=0000
+example3.o:
+    CODE              Offs=000000  Size=000132  Align=00001  Fill=0000
+    RODATA            Offs=000000  Size=000012  Align=00001  Fill=0000
+    BSS               Offs=000000  Size=000015  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(condes.o):
+    CODE              Offs=000132  Size=00000C  Align=00001  Fill=0000
+    DATA              Offs=000000  Size=000025  Align=00001  Fill=0000
+    ONCE              Offs=000000  Size=00000C  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(copydata.o):
+    CODE              Offs=00013E  Size=00002D  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(decsp4.o):
+    CODE              Offs=00016B  Size=00000D  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(incsp2.o):
+    CODE              Offs=000178  Size=000016  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(popa.o):
+    CODE              Offs=00018E  Size=00000C  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(popsreg.o):
+    CODE              Offs=00019A  Size=000010  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(pusha.o):
+    CODE              Offs=0001AA  Size=000016  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(pushax.o):
+    CODE              Offs=0001C0  Size=00001A  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(udiv.o):
+    CODE              Offs=0001DA  Size=00004F  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(umod.o):
+    CODE              Offs=000229  Size=000011  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(zerobss.o):
+    CODE              Offs=00023A  Size=000023  Align=00001  Fill=0000
+/usr/share/cc65/lib/nes.lib(zeropage.o):
+    ZEROPAGE          Offs=000000  Size=00001A  Align=00001  Fill=0000
+
+
+Segment list:
+-------------
+Name                   Start     End    Size  Align
+----------------------------------------------------
+CHARS                 000000  001FFF  002000  00001
+HEADER                000000  00000F  000010  00001
+ZEROPAGE              000028  000041  00001A  00001
+DATA                  000300  000324  000025  00001
+BSS                   000325  000339  000015  00001
+VECTORS               007FFA  007FFF  000006  00001
+STARTUP               008000  008D4E  000D4F  00001
+CODE                  008D4F  008FAB  00025D  00001
+RODATA                008FAC  008FBD  000012  00001
+ONCE                  008FE3  008FEE  00000C  00001
+
+
+Exports list by name:
+---------------------
+__BSS_RUN__               000325 RLA    __BSS_SIZE__              000015 REA    
+__CONSTRUCTOR_COUNT__     000000 REA    __CONSTRUCTOR_TABLE__     008D4F RLA    
+__DATA_LOAD__             008FBE RLA    __DATA_RUN__              000300 RLA    
+__DATA_SIZE__             000025 REA    __DESTRUCTOR_COUNT__      000000 REA    
+__DESTRUCTOR_TABLE__      008FBE RLA    __RAM_SIZE__              000500 REA    
+__RAM_START__             000300 RLA    __STARTUP__               000001 REA    
+_main                     008D4F RLA    _memcpy                   008543 RLA    
+_oam_spr                  0082DD RLA    _pad_poll                 008485 RLA    
+_pal_col                  008235 RLA    _ppu_on_all               00828C RLA    
+_ppu_waitnmi              00835C RLA    _set_vram_update          0084FA RLA    
+copydata                  008E8D RLA    decsp4                    008EBA RLA    
+incsp2                    008ECF RLA    initlib                   008FE3 RLA    
+popa                      008EDD RLA    popax                     008EC7 RLA    
+popsreg                   008EE9 RLA    ptr1                      000030 RLZ    
+ptr2                      000032 RLZ    ptr4                      000036 RLZ    
+pusha                     008EFD RLA    pusha0                    008F11 RLA    
+pushax                    008F13 RLA    sp                        000028 RLZ    
+sreg                      00002A RLZ    tmp1                      000038 RLZ    
+tosudiva0                 008F29 RLA    tosumoda0                 008F78 RLA    
+udiv16                    008F3A RLA    zerobss                   008F89 RLA    
+
+
+
+Exports list by value:
+----------------------
+__CONSTRUCTOR_COUNT__     000000 REA    __DESTRUCTOR_COUNT__      000000 REA    
+__STARTUP__               000001 REA    __BSS_SIZE__              000015 REA    
+__DATA_SIZE__             000025 REA    sp                        000028 RLZ    
+sreg                      00002A RLZ    ptr1                      000030 RLZ    
+ptr2                      000032 RLZ    ptr4                      000036 RLZ    
+tmp1                      000038 RLZ    __DATA_RUN__              000300 RLA    
+__RAM_START__             000300 RLA    __BSS_RUN__               000325 RLA    
+__RAM_SIZE__              000500 REA    _pal_col                  008235 RLA    
+_ppu_on_all               00828C RLA    _oam_spr                  0082DD RLA    
+_ppu_waitnmi              00835C RLA    _pad_poll                 008485 RLA    
+_set_vram_update          0084FA RLA    _memcpy                   008543 RLA    
+__CONSTRUCTOR_TABLE__     008D4F RLA    _main                     008D4F RLA    
+copydata                  008E8D RLA    decsp4                    008EBA RLA    
+popax                     008EC7 RLA    incsp2                    008ECF RLA    
+popa                      008EDD RLA    popsreg                   008EE9 RLA    
+pusha                     008EFD RLA    pusha0                    008F11 RLA    
+pushax                    008F13 RLA    tosudiva0                 008F29 RLA    
+udiv16                    008F3A RLA    tosumoda0                 008F78 RLA    
+zerobss                   008F89 RLA    __DATA_LOAD__             008FBE RLA    
+__DESTRUCTOR_TABLE__      008FBE RLA    initlib                   008FE3 RLA    
+
+
+
+Imports list:
+-------------
+__BSS_RUN__ ([linker generated]):
+    zerobss.o                 common/zerobss.s(8)
+__BSS_SIZE__ ([linker generated]):
+    zerobss.o                 common/zerobss.s(8)
+__CONSTRUCTOR_COUNT__ ([linker generated]):
+    condes.o                  runtime/condes.s(18)
+__CONSTRUCTOR_TABLE__ ([linker generated]):
+    condes.o                  runtime/condes.s(18)
+__DATA_LOAD__ ([linker generated]):
+    copydata.o                common/copydata.s(8)
+__DATA_RUN__ ([linker generated]):
+    copydata.o                common/copydata.s(8)
+__DATA_SIZE__ ([linker generated]):
+    copydata.o                common/copydata.s(8)
+__DESTRUCTOR_COUNT__ ([linker generated]):
+    condes.o                  runtime/condes.s(19)
+__DESTRUCTOR_TABLE__ ([linker generated]):
+    condes.o                  runtime/condes.s(19)
+__RAM_SIZE__ ([linker generated]):
+    crt0.o                    crt0.s(23)
+__RAM_START__ ([linker generated]):
+    crt0.o                    crt0.s(23)
+__STARTUP__ (crt0.o):
+    example3.o                example3.s(13)
+_main (example3.o):
+    crt0.o                    crt0.s(20)
+_memcpy (crt0.o):
+    example3.o                example3.s(20)
+_oam_spr (crt0.o):
+    example3.o                example3.s(16)
+_pad_poll (crt0.o):
+    example3.o                example3.s(18)
+_pal_col (crt0.o):
+    example3.o                example3.s(14)
+_ppu_on_all (crt0.o):
+    example3.o                example3.s(15)
+_ppu_waitnmi (crt0.o):
+    example3.o                example3.s(17)
+_set_vram_update (crt0.o):
+    example3.o                example3.s(19)
+copydata (copydata.o):
+    crt0.o                    crt0.s(20)
+decsp4 (decsp4.o):
+    example3.o                example3.s(265)
+incsp2 (incsp2.o):
+    popsreg.o                 runtime/popsreg.s(8)
+initlib (condes.o):
+    crt0.o                    crt0.s(20)
+popa (popa.o):
+    crt0.o                    crt0.s(20)
+popax (incsp2.o):
+    crt0.o                    crt0.s(20)
+popsreg (popsreg.o):
+    umod.o                    runtime/umod.s(8)
+    udiv.o                    runtime/udiv.s(8)
+ptr1 (zeropage.o):
+    zerobss.o                 common/zerobss.s(9)
+    umod.o                    runtime/umod.s(9)
+    udiv.o                    runtime/udiv.s(9)
+    copydata.o                common/copydata.s(9)
+ptr2 (zeropage.o):
+    copydata.o                common/copydata.s(9)
+ptr4 (zeropage.o):
+    umod.o                    runtime/umod.s(9)
+    udiv.o                    runtime/udiv.s(9)
+pusha (pusha.o):
+    example3.o                example3.s(265)
+pusha0 (pushax.o):
+    example3.o                example3.s(265)
+pushax (pushax.o):
+    example3.o                example3.s(265)
+sp (zeropage.o):
+    popsreg.o                 runtime/popsreg.s(9)
+    pushax.o                  runtime/pushax.s(8)
+    pusha.o                   runtime/pusha.s(8)
+    popa.o                    runtime/popa.s(8)
+    incsp2.o                  runtime/incsp2.s(8)
+    decsp4.o                  runtime/decsp4.s(8)
+    example3.o                example3.s(10)
+    crt0.o                    /usr/share/cc65/asminc/zeropage.inc(11)
+sreg (zeropage.o):
+    popsreg.o                 runtime/popsreg.s(9)
+    udiv.o                    runtime/udiv.s(9)
+tmp1 (zeropage.o):
+    copydata.o                common/copydata.s(9)
+tosudiva0 (udiv.o):
+    example3.o                example3.s(265)
+tosumoda0 (umod.o):
+    example3.o                example3.s(265)
+udiv16 (udiv.o):
+    umod.o                    runtime/umod.s(8)
+zerobss (zerobss.o):
+    crt0.o                    crt0.s(20)
+

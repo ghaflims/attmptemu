@@ -5,7 +5,7 @@
 //uint8_t prg_pgs[MMC_MAX_PGS][0x4000];
 uint8_t chr_pgs[MMC_MAX_PGS][0x2000];
 int mmc_chr_pg;
-
+uint8_t mmc_id;
 // this is really bad :/ bad bad :/
 // FIXME don't use memory like candy
 uint8_t mmc_mem[0x10000];

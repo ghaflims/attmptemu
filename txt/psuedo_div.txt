@@ -1,0 +1,103 @@
+A20048A52838E9028528B002C629A001
+8A91286888912860
+
+pusha0 8DDB:
+                
+  LDX #$00                 
+  PHA                      
+  LDA $28                  
+  SEC                      
+  SBC #$02                 
+  STA $28                  
+  BCS $8DE9                
+  DEC $29                  
+  LDY #$01                 
+  TXA                      
+  STA ($28),Y              
+  PLA                      
+  DEY                      
+  STA ($28),Y              
+  RTS                      
+
+============================================
+
+A2008536863720C98D20048EA52AA62B
+60
+
+tosudiva0 8DF3:
+
+
+  LDX #$00                 
+  STA $36                  
+  STX $37                  
+  JSR $8DC9 #popsreg               
+  JSR $8E04 #udiv16             
+  LDA $2A                  
+  LDX $2B                  
+  RTS                      
+
+============================================
+
+48A001B128852B88B128852A684CAF8D
+A900A20048A52838E9028528B002C629
+A0018A91286888912860
+
+popsreg 8DC9:
+
+  PHA                      
+  LDY #$01                 
+  LDA ($28),Y              
+  STA $2B                  
+  DEY                      
+  LDA ($28),Y              
+  STA $2A                  
+  PLA                      
+  JMP $8DAF                
+  LDA #$00                 
+  LDX #$00                 
+  PHA                      
+  LDA $28                  
+  SEC                      
+  SBC #$02                 
+  STA $28                  
+  BCS $8DE9                
+  DEC $29                  
+  LDY #$01                 
+  TXA                      
+  STA ($28),Y              
+  PLA                      
+  DEY                      
+  STA ($28),Y              
+  RTS                      
+
+==========================================
+A9008531A010A637F01F062A262B2A26
+3148C536A531E5379008853168E53648
+E62A6888D0E4853060
+
+udiv16 8E04:
+  LDA #$00                 
+  STA $31                  
+  LDY #$10                 
+  LDX $37                  
+  BEQ $8E2D                
+  ASL $2A                  
+  ROL $2B                  
+  ROL A                    
+  ROL $31                  
+  PHA                      
+  CMP $36                  
+  LDA $31                  
+  SBC $37                  
+  BCC $8E26                
+  STA $31                  
+  PLA                      
+  SBC $36                  
+  PHA                      
+  INC $2A                  
+  PLA                      
+  DEY                      
+  BNE $8E0E                
+  STA $30                  
+  RTS                      
+

@@ -5,7 +5,7 @@
 #define MMC_MAX_PGS 32
 
 
-uint8_t mmc_id;
+
 
 uint8_t mmc_ior(uint16_t addr);
 void mmc_iow(uint16_t addr, uint8_t data);
